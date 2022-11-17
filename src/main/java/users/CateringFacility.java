@@ -2,10 +2,13 @@ package users;
 
 import interfaceRMI.IRegistar;
 
+import java.io.Serializable;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Calendar;
+import java.util.Objects;
 
-public class CateringFacility {
+public class CateringFacility implements Serializable {
     private String buisnessId;
     private String name;
     private String address;
@@ -29,15 +32,19 @@ public class CateringFacility {
         start();
     }
 
-    public synchronized void start(){
+    public void start(){
         try {
-            Registry myRegistry = LocateRegistry.getRegistry(hostName, port);
+            Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-
-            registar.EnrolCF(this);
+            CateringFacility cf = this;
+            registar.EnrolCF(cf);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void generateQrCode(){
+
     }
 
     public String getBuisnessId() {
