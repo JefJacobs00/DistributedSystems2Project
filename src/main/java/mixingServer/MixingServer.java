@@ -1,7 +1,7 @@
 package mixingServer;
 
 import interfaceRMI.IMixingServer;
-import users.Capsule;
+import Globals.Capsule;
 
 import java.rmi.RemoteException;
 

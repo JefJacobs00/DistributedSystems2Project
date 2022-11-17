@@ -1,6 +1,6 @@
 package interfaceRMI;
 
-import users.Capsule;
+import Globals.Capsule;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
