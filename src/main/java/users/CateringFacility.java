@@ -2,8 +2,6 @@ package users;
 
 import interfaceRMI.IRegistar;
 
-import java.io.Serializable;
-import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -35,7 +33,7 @@ public class CateringFacility implements java.io.Serializable {
         try {
             Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            String[] test = registar.EnrolCF(this);
+            String[] test = registar.enrolCF(this);
 
             System.out.println(test);
         } catch (Exception e) {

@@ -10,6 +10,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.awt.SystemColor.info;
@@ -25,6 +27,8 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     private Signature signature;
     private KeyPair keyPair;
 
+    private DateTimeFormatter dtf;
+
     private static final int DAILYTOKENCOUNT = 48;
 
     protected Registar() throws RemoteException, NoSuchAlgorithmException {
@@ -35,11 +39,12 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
         users = new HashMap<String, Set<String>>();
         secretKeys = new HashMap<>();
+        dtf = DateTimeFormatter.ofPattern("dd/MM/uuuu");
 
     }
 
     @Override
-    public String[] EnrolCF(CateringFacility cf) {
+    public String[] enrolCF(CateringFacility cf) {
         // Send a batch of day specific pseudonyms
 
         SecretKey s = kg.generateKey();
@@ -53,7 +58,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     }
 
     @Override
-    public String[] EntrolUser(String phoneNumber) throws RemoteException, InvalidKeyException, SignatureException {
+    public String[] entrolUser(String phoneNumber) throws RemoteException, InvalidKeyException, SignatureException {
         users.put(phoneNumber, new HashSet<String>());
 
         // Generate & return the tokens it can use.
@@ -62,7 +67,8 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         signature.initSign(keyPair.getPrivate(), s);
 
         // Sign using current day
-        signature.update("17/11/2022".getBytes(StandardCharsets.UTF_8));
+        LocalDate localDate = LocalDate.now();
+        signature.update(dtf.format(localDate).getBytes(StandardCharsets.UTF_8));
 
         for(int i = 0; i < DAILYTOKENCOUNT; i++){
             String token = Base64.getEncoder().encodeToString(signature.sign());
@@ -72,5 +78,11 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
         return tokens;
     }
+
+    @Override
+    public PublicKey getPublicKey() throws RemoteException {
+        return keyPair.getPublic();
+    }
+
 
 }

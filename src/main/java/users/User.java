@@ -21,7 +21,7 @@ public class User {
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
 
-            String[] a = registar.EntrolUser(this.phoneNumber);
+            String[] a = registar.entrolUser(this.phoneNumber);
             System.out.println(a[0]);
 
 
