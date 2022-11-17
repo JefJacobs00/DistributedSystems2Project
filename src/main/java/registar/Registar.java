@@ -5,28 +5,36 @@ import users.CateringFacility;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 import static java.awt.SystemColor.info;
 
 
 public class Registar extends UnicastRemoteObject implements IRegistar {
-    private HashMap<String, String[] > users;
-    private HashMap<CateringFacility, SecretKey> secretKeys;
-    private HashMap<CateringFacility, String[]> facilitySynonyms;
+    // Mapping between user and issued tokens
+    private HashMap<String, Set<String> > users;
+    private HashMap<CateringFacility , SecretKey> secretKeys;
+    private HashMap<String , String[]> facilitySynonyms;
 
     private KeyGenerator kg;
+    private Signature signature;
+    private KeyPair keyPair;
 
     private static final int DAILYTOKENCOUNT = 48;
 
     protected Registar() throws RemoteException, NoSuchAlgorithmException {
         kg = KeyGenerator.getInstance("HmacSHA256");
-        users = new HashMap<String, String[]>();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
+        keyPair = keyPairGenerator.generateKeyPair();
+        signature = Signature.getInstance("SHA256WithDSA");
+
+        users = new HashMap<String, Set<String>>();
+        secretKeys = new HashMap<>();
 
     }
 
@@ -38,21 +46,31 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         secretKeys.put(cf, s);
 
         // KDF secret key
-        String[] nyms = new String[14];
-        for (int i =0;i < nyms.length; i++){
-            nyms[i] = "" + Objects.hash(s, cf.getAddress(),i);
-        }
 
+        // create batch of nym
 
-        return nyms;
+        return null;
     }
 
     @Override
-    public String[] EntrolUser(String phoneNumber) throws RemoteException {
-        users.put(phoneNumber, new String[DAILYTOKENCOUNT]);
+    public String[] EntrolUser(String phoneNumber) throws RemoteException, InvalidKeyException, SignatureException {
+        users.put(phoneNumber, new HashSet<String>());
 
         // Generate & return the tokens it can use.
-        return null;
+        String[] tokens = new String[DAILYTOKENCOUNT];
+        SecureRandom s = new SecureRandom();
+        signature.initSign(keyPair.getPrivate(), s);
+
+        // Sign using current day
+        signature.update("17/11/2022".getBytes(StandardCharsets.UTF_8));
+
+        for(int i = 0; i < DAILYTOKENCOUNT; i++){
+            String token = Base64.getEncoder().encodeToString(signature.sign());
+            tokens[i] = token;
+            users.get(phoneNumber).add(token);
+        }
+
+        return tokens;
     }
 
 }

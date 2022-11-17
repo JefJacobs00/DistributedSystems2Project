@@ -3,12 +3,11 @@ package users;
 import interfaceRMI.IRegistar;
 
 import java.io.Serializable;
+import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Calendar;
-import java.util.Objects;
 
-public class CateringFacility implements Serializable {
+public class CateringFacility implements java.io.Serializable {
     private String buisnessId;
     private String name;
     private String address;
@@ -36,8 +35,9 @@ public class CateringFacility implements Serializable {
         try {
             Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            CateringFacility cf = this;
-            registar.EnrolCF(cf);
+            String[] test = registar.EnrolCF(this);
+
+            System.out.println(test);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
