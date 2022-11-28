@@ -102,8 +102,13 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     }
 
     @Override
-    public PublicKey getPublicKey() throws RemoteException {
-        return keyPair.getPublic();
+    public Boolean validateToken(String token) throws RemoteException, InvalidKeyException, SignatureException {
+        byte[] tokenBytes = Base64.getDecoder().decode(token);
+        signature.initVerify(keyPair.getPublic());
+
+        LocalDate localDate = LocalDate.now();
+        signature.update(dtf.format(localDate).getBytes(StandardCharsets.UTF_8));
+        return signature.verify(tokenBytes);
     }
 
 
