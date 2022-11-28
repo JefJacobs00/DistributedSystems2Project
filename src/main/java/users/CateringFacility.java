@@ -1,9 +1,20 @@
 package users;
 
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeWriter;
 import interfaceRMI.IRegistar;
+import net.glxn.qrgen.javase.QRCode;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Map;
 
 public class CateringFacility implements java.io.Serializable {
     private String buisnessId;
@@ -34,15 +45,18 @@ public class CateringFacility implements java.io.Serializable {
             Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
             String[] test = registar.enrolCF(this);
-
-            System.out.println(test);
+            //information into json object --> to string to qr code
+            BufferedImage image = generateQrCode("test"+buisnessId+"code");
+            ImageIO.write(image, "jpg", new File("image.jpg"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void generateQrCode(){
-
+    private BufferedImage generateQrCode(String information) throws  IOException {
+        ByteArrayOutputStream stream = QRCode.from(information).withSize(250, 250).stream();
+        ByteArrayInputStream bis = new ByteArrayInputStream(stream.toByteArray());
+        return ImageIO.read(bis);
     }
 
     public String getBuisnessId() {
