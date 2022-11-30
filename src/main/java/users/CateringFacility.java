@@ -1,5 +1,6 @@
 package users;
 
+import Globals.QRValues;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -8,12 +9,17 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import interfaceRMI.IRegistar;
 import net.glxn.qrgen.javase.QRCode;
+import org.bouncycastle.util.Longs;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Map;
 
 public class CateringFacility implements java.io.Serializable {
@@ -44,19 +50,26 @@ public class CateringFacility implements java.io.Serializable {
         try {
             Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            String[] test = registar.enrolCF(this);
-            //information into json object --> to string to qr code
-            BufferedImage image = generateQrCode("test"+buisnessId+"code");
+            String test = registar.enrolCF(this);
+            BufferedImage image = createQrInformation(test);
             ImageIO.write(image, "jpg", new File("image.jpg"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private BufferedImage generateQrCode(String information) throws  IOException {
-        ByteArrayOutputStream stream = QRCode.from(information).withSize(250, 250).stream();
-        ByteArrayInputStream bis = new ByteArrayInputStream(stream.toByteArray());
-        return ImageIO.read(bis);
+    private BufferedImage createQrInformation(String nym) throws NoSuchAlgorithmException, IOException {
+        SecureRandom s = new SecureRandom();
+        long r = s.nextLong();
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(r);
+        byte[] bytes = buffer.array();
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        sha.update(bytes);
+        sha.update(nym.getBytes());
+        byte[] hash = sha.digest();
+        QRValues qr = new QRValues(r, buisnessId, hash.toString());
+        return qr.convertToImage();
     }
 
     public String getBuisnessId() {

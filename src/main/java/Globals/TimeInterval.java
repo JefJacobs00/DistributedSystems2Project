@@ -1,30 +1,32 @@
 package Globals;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
 public class TimeInterval implements java.io.Serializable {
-    Calendar start;
-    Calendar end;
+    LocalDateTime start;
+    LocalDateTime end;
 
-    public TimeInterval(Calendar start, Calendar end) {
+    public TimeInterval(LocalDateTime start, LocalDateTime end) {
         this.start = start;
         this.end = end;
     }
 
-    public Calendar getStart() {
+    public LocalDateTime getStart() {
         return start;
     }
 
-    public void setStart(Calendar start) {
+    public void setStart(LocalDateTime start) {
         this.start = start;
     }
 
-    public Calendar getEnd() {
+    public LocalDateTime getEnd() {
         return end;
     }
 
-    public void setEnd(Calendar end) {
+    public void setEnd(LocalDateTime end) {
         this.end = end;
     }
 }

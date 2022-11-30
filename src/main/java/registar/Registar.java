@@ -8,19 +8,13 @@ import users.CateringFacility;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.KeySpec;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static java.awt.SystemColor.info;
 
 
 public class Registar extends UnicastRemoteObject implements IRegistar {
@@ -50,15 +44,15 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     }
 
     @Override
-    public String[] enrolCF(CateringFacility cf)  {
+    public String enrolCF(CateringFacility cf) throws NoSuchAlgorithmException {
         // Send a batch of day specific pseudonyms
 
         SecretKey s = kg.generateKey();
         secretKeys.put(cf, s);
-        return null;
+        return getPseudonym(cf).toString();
     }
 
-    public byte[] getPseudonyms(CateringFacility cf) throws NoSuchAlgorithmException {
+    public byte[] getPseudonym(CateringFacility cf) throws NoSuchAlgorithmException {
         byte[] masterKey = secretKeys.get(cf).getEncoded();
 
         LocalDate localDate = LocalDate.now();
