@@ -1,3 +1,3 @@
 
-R
-"src/main/java/Globals/Capsule.java,2\9\2953cdce197dd2c00f4f4f504c5d6cd77be2cc1e
+S
+#src/main/java/Globals/QRValues.java,0\6\06c13f20a2297b2ee8e7d22370b3f9b6bcfbb1c8

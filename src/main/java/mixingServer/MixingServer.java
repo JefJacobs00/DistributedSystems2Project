@@ -2,17 +2,49 @@ package mixingServer;
 
 import interfaceRMI.IMixingServer;
 import Globals.Capsule;
+import interfaceRMI.IRegistar;
 
+import java.io.InvalidObjectException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.security.*;
+import java.util.ArrayList;
 
-public class MixingServer implements IMixingServer {
+import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
-    public MixingServer(){}
+public class MixingServer extends UnicastRemoteObject implements IMixingServer {
+    private IRegistar registar;
+    private ArrayList<String> spentTokens;
+
+    private KeyPair keyPair;
+    private Signature signature;
+
+    public MixingServer() throws RemoteException, NotBoundException, NoSuchAlgorithmException, InvalidKeyException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPair = keyPairGenerator.generateKeyPair();
+        signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(keyPair.getPrivate());
+
+
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        registar = (IRegistar) myRegistry.lookup("Registar");
+        spentTokens = new ArrayList<>();
+    }
 
     @Override
-    public String receiveCapsule(Capsule capsule) throws RemoteException {
+    public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
         // Check validity (user token, day, spent)
-        // Sign cfhash and send it back (4 last values are the code for the day)
-        return null;
+        boolean isTokenValid = registar.validateToken(capsule.getUserToken());
+        boolean isSpend = spentTokens.contains(capsule.getUserToken());
+        if(isTokenValid && !isSpend){
+            spentTokens.add(capsule.getUserToken());
+            signature.update(capsule.getCfHash().getBytes());
+            return toHexString(signature.sign());
+        }
+
+        return "Invalid token";
     }
 }

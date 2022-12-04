@@ -22,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Map;
 
+import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
+
 public class CateringFacility implements java.io.Serializable {
     private String buisnessId;
     private String name;
@@ -29,6 +31,8 @@ public class CateringFacility implements java.io.Serializable {
     private String phoneNumber;
 
     private String[] dayTokens;
+
+    private BufferedImage qrCode;
 
     private final String hostName;
     private final int port;
@@ -50,9 +54,9 @@ public class CateringFacility implements java.io.Serializable {
         try {
             Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            String test = registar.enrolCF(this);
-            BufferedImage image = createQrInformation(test);
-            ImageIO.write(image, "jpg", new File("image.jpg"));
+            String token = registar.enrolCF(this);
+            qrCode = createQrInformation(token);
+            ImageIO.write(qrCode, "jpg", new File("image.jpg"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +72,7 @@ public class CateringFacility implements java.io.Serializable {
         sha.update(bytes);
         sha.update(nym.getBytes());
         byte[] hash = sha.digest();
-        QRValues qr = new QRValues(r, buisnessId, hash.toString());
+        QRValues qr = new QRValues(r, buisnessId, toHexString(hash));
         return qr.convertToImage();
     }
 
@@ -102,5 +106,9 @@ public class CateringFacility implements java.io.Serializable {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public BufferedImage getQrCode() {
+        return qrCode;
     }
 }

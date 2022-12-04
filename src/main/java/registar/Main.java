@@ -1,5 +1,7 @@
 package registar;
 
+import mixingServer.MixingServer;
+
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -7,7 +9,8 @@ public class Main {
     private void startServer() {
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
-            registry.rebind("Registar", new Registar());
+            registry.bind("Registar", new Registar());
+            registry.bind("MixingServer", new MixingServer());
         } catch (Exception e) {
             e.printStackTrace();
         }
