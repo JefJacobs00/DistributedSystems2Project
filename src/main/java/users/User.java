@@ -49,15 +49,13 @@ public class User {
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
-
-
             tokens = registar.enrollUser(this.phoneNumber);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public QRValues readQRCode(String filePath) throws IOException, NotFoundException {
+    public QRValues readQRCodeFromFilePath(String filePath) throws IOException, NotFoundException {
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
                 new BufferedImageLuminanceSource(
                         ImageIO.read(new FileInputStream(filePath)))));
@@ -77,7 +75,7 @@ public class User {
 
     }
 
-    private QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
+    public QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
         LuminanceSource source = new BufferedImageLuminanceSource(qrcode);
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
         Result qrCodeResult = new MultiFormatReader().decode(bitmap);

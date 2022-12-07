@@ -67,7 +67,7 @@ public class CateringFacilityGUI extends JFrame{
         initRegistrationForm();
         initQrCodeForm();
         mainPanel.add("Catering Facility Registration", registrationParentPanel);
-        mainPanel.add("QR Code Generator", generateQrPanel);
+        mainPanel.add("QR Code Generator", generateQrParentPanel);
 
         this.add(mainPanel);
 
@@ -310,7 +310,7 @@ public class CateringFacilityGUI extends JFrame{
             String fullAddressString = String.format("%s, %s %s, %s", address, zipCode, city, country);
             CateringFacility cateringFacility = new CateringFacility(businessId, name, fullAddressString, phoneNumber, "localhost", 1099);
             mainPanel.setSelectedIndex(1);
-            regJPanelFields.get("businessId").setText(cateringFacility.getBusinessId());
+            genQrFields.get("businessId").setText(cateringFacility.getBusinessId());
             generateQr(cateringFacility);
         }
     }
