@@ -12,6 +12,7 @@ import net.glxn.qrgen.javase.QRCode;
 import org.bouncycastle.util.Longs;
 
 import javax.imageio.ImageIO;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -21,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
@@ -29,9 +31,6 @@ public class CateringFacility implements java.io.Serializable {
     private String name;
     private String address;
     private String phoneNumber;
-
-    private String[] dayTokens;
-
     private BufferedImage qrCode;
 
     private final String hostName;
@@ -52,7 +51,7 @@ public class CateringFacility implements java.io.Serializable {
 
     public void start(){
         try {
-            Registry myRegistry = LocateRegistry.getRegistry(hostName, 1099);
+            Registry myRegistry = LocateRegistry.getRegistry(hostName, port);
             registar = (IRegistar) myRegistry.lookup("Registar");
             String token = registar.enrolCF(this);
             qrCode = createQrInformation(token);
@@ -110,5 +109,18 @@ public class CateringFacility implements java.io.Serializable {
 
     public BufferedImage getQrCode() {
         return qrCode;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CateringFacility that = (CateringFacility) o;
+        return Objects.equals(buisnessId, that.buisnessId) && Objects.equals(name, that.name) && Objects.equals(address, that.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(buisnessId, name, address);
     }
 }

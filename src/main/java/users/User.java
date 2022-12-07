@@ -10,8 +10,11 @@ import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
 import mixingServer.MixingServer;
 
+import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
+import javax.crypto.spec.SecretKeySpec;
 import javax.imageio.ImageIO;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,8 +48,8 @@ public class User {
         try {
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            initSecureConnection();
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
+
 
             tokens = registar.entrolUser(this.phoneNumber);
         } catch (Exception e) {
@@ -100,40 +103,5 @@ public class User {
 
         return new TimeInterval(start, end);
     }
-
-    private void initSecureConnection() throws Exception{
-        KeyPair keyPairDH = createDHKey();
-        byte[] keyA = registar.initSecureConnection(keyPairDH.getPublic().getEncoded());
-        KeyAgreement keyAgreement = createKeyAgree(keyPairDH);
-        byte[] sharedSecret = createSharedSecret(keyAgreement, keyA);
-
-        System.out.println("Shared secret: " + toHexString(sharedSecret));
-    }
-
-    private KeyPair createDHKey() throws Exception {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DH");
-        keyPairGenerator.initialize(2048);
-
-        return keyPairGenerator.generateKeyPair();
-    }
-
-    private KeyAgreement createKeyAgree(KeyPair keyPair) throws Exception{
-        KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
-        keyAgree.init(keyPair.getPrivate());
-
-        return keyAgree;
-    }
-
-    private byte[] createSharedSecret(KeyAgreement keyAgreement, byte[] keyB) throws Exception{
-        KeyFactory keyFactory = KeyFactory.getInstance("DH");
-
-        X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyB);
-
-        PublicKey pubKeyB = keyFactory.generatePublic(x509KeySpec);
-        keyAgreement.doPhase(pubKeyB, true);
-
-        return keyAgreement.generateSecret();
-    }
-
 
 }

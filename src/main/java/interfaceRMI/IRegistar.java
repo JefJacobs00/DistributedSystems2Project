@@ -11,8 +11,8 @@ import java.security.SignatureException;
 
 public interface IRegistar extends Remote {
     public String enrolCF(CateringFacility cateringFacility) throws RemoteException, NoSuchAlgorithmException;
-    public String[] entrolUser(String phoneNumber) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException;
+    public String[] entrolUser(String phoneNumber) throws Exception;
+
     public Boolean validateToken(String token) throws RemoteException, InvalidKeyException, SignatureException;
 
-    public byte[] initSecureConnection(byte[] pubKey) throws RemoteException;
 }

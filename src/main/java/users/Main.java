@@ -13,7 +13,7 @@ import static org.bouncycastle.util.encoders.Hex.toHexString;
 public class Main {
     public static void main(String[] args){
         CateringFacility cf = new CateringFacility("id1", "cf","somewhere", "0495366639" ,"localhost" , 1399 );
-        User user = new User("0495366639");
+        User user = new User("0495366618");
         try {
             String result = user.visitFacility(cf.getQrCode());
             System.out.println(result);
