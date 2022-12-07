@@ -1,6 +1,6 @@
 package Globals;
 
-public class SignedData {
+public class SignedData implements java.io.Serializable{
     private String signature;
     private Object data;
 

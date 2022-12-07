@@ -1,19 +1,19 @@
 package registar;
 
+import Globals.SignedData;
 import interfaceRMI.IRegistar;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
-import org.bouncycastle.util.encoders.Hex;
 import users.CateringFacility;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,7 +26,7 @@ import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 public class Registar extends UnicastRemoteObject implements IRegistar {
     // Mapping between user and issued tokens
-    private HashMap<String, String[]> users;
+    private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
     private HashMap<String , String[]> facilitySynonyms;
 
@@ -46,7 +46,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         keyPairSign = keyPairGenerator.generateKeyPair();
         signature = Signature.getInstance("SHA256withRSA");
 
-        users = new HashMap<String, String[]>();
+        users = new HashMap<String, SignedData[]>();
         secretKeys = new HashMap<>();
         dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     }
@@ -81,11 +81,12 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     
 
     @Override
-    public String[] enrollUser(String phoneNumber) throws Exception{
+    public SignedData[] enrollUser(String phoneNumber) throws Exception{
 
         // Generate & return the tokens it can use.
-        String[] tokens = new String[DAILYTOKENCOUNT];
+        SignedData[] tokens = new SignedData[DAILYTOKENCOUNT];
         signature.initSign(keyPairSign.getPrivate());
+        SecureRandom s = new SecureRandom();
 
         // Sign using current day
         LocalDate localDate = LocalDate.now();
@@ -93,11 +94,12 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
 
         for(int i = 0; i < DAILYTOKENCOUNT; i++){
-            LocalDateTime interval = localDate.atStartOfDay().plusMinutes(30*i);
-            signature.update(phoneNumber.getBytes());
+            long r = s.nextLong();
+            signature.update(longToBytes(r));
+            LocalDateTime interval = localDate.atStartOfDay();
             signature.update(dtf.format(interval).getBytes(StandardCharsets.UTF_8));
             String token = toHexString(signature.sign());
-            tokens[i] = token;
+            tokens[i] = new SignedData(token, r);
         }
 
 
@@ -106,14 +108,20 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return tokens;
     }
 
+    private byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
+    }
+
     @Override
-    public Boolean validateToken(String token) throws RemoteException, InvalidKeyException, SignatureException {
-        byte[] tokenBytes = decode(token);
+    public Boolean validateToken(SignedData token) throws RemoteException, InvalidKeyException, SignatureException {
+        byte[] tokenBytes = decode(token.getSignature());
 
         signature.initVerify(keyPairSign.getPublic());
-        LocalDateTime interval = LocalDateTime.now();
-        interval = interval.truncatedTo(ChronoUnit.MINUTES).minusMinutes(interval.getMinute()%30);
-        System.out.println(dtf.format(interval));
+        signature.update(longToBytes((long) token.getData()));
+        LocalDate localDate = LocalDate.now();
+        LocalDateTime interval = localDate.atStartOfDay();
         signature.update(dtf.format(interval).getBytes(StandardCharsets.UTF_8));
 
         return signature.verify(tokenBytes);

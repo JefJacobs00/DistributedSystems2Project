@@ -2,6 +2,7 @@ package users;
 
 import Globals.Capsule;
 import Globals.QRValues;
+import Globals.SignedData;
 import Globals.TimeInterval;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
@@ -34,7 +35,7 @@ import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 public class User {
     private String phoneNumber;
-    private String[] tokens;
+    private SignedData[] tokens;
 
     private IRegistar registar;
     private IMixingServer mixingServer;
