@@ -3,10 +3,10 @@ package Globals;
 public class Capsule implements java.io.Serializable {
 
     private TimeInterval interval;
-    private String userToken;
+    private SignedData userToken;
     private String cfHash;
 
-    public Capsule(TimeInterval interval, String userToken, String cfHash) {
+    public Capsule(TimeInterval interval, SignedData userToken, String cfHash) {
         this.interval = interval;
         this.userToken = userToken;
         this.cfHash = cfHash;
@@ -20,11 +20,11 @@ public class Capsule implements java.io.Serializable {
         this.interval = interval;
     }
 
-    public String getUserToken() {
+    public SignedData getUserToken() {
         return userToken;
     }
 
-    public void setUserToken(String userToken) {
+    public void setUserToken(SignedData userToken) {
         this.userToken = userToken;
     }
 

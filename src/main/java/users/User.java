@@ -2,39 +2,30 @@ package users;
 
 import Globals.Capsule;
 import Globals.QRValues;
+import Globals.SignedData;
 import Globals.TimeInterval;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
-import mixingServer.MixingServer;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.spec.SecretKeySpec;
 import javax.imageio.ImageIO;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 public class User {
     private String phoneNumber;
-    private String[] tokens;
+    private SignedData[] tokens;
 
     private IRegistar registar;
     private IMixingServer mixingServer;

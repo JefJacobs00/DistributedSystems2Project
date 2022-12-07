@@ -41,7 +41,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
         boolean isSpend = spentTokens.contains(capsule.getUserToken());
         if(isTokenValid && !isSpend){
-            spentTokens.add(capsule.getUserToken());
+            spentTokens.add(capsule.getUserToken().getSignature());
             signature.update(capsule.getCfHash().getBytes());
             return toHexString(signature.sign());
         }
