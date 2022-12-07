@@ -1,15 +1,7 @@
 package users;
 
 import Globals.QRValues;
-import com.google.zxing.*;
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeWriter;
 import interfaceRMI.IRegistar;
-import net.glxn.qrgen.javase.QRCode;
-import org.bouncycastle.util.Longs;
 
 import javax.imageio.ImageIO;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
@@ -27,7 +19,7 @@ import java.util.Objects;
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
 public class CateringFacility implements java.io.Serializable {
-    private String buisnessId;
+    private String businessId;
     private String name;
     private String address;
     private String phoneNumber;
@@ -38,24 +30,21 @@ public class CateringFacility implements java.io.Serializable {
 
     private IRegistar registar;
 
-    public CateringFacility(String buisnessId, String name, String address, String phoneNumber, String hostName, int port) {
-        this.buisnessId = buisnessId;
+    public CateringFacility(String businessId, String name, String address, String phoneNumber, String hostName, int port) {
+        this.businessId = businessId;
         this.name = name;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.hostName = hostName;
         this.port = port;
-
-        start();
     }
 
-    public void start(){
+    public BufferedImage requestQrCode(){
         try {
-            Registry myRegistry = LocateRegistry.getRegistry(hostName, port);
+            Registry myRegistry = LocateRegistry.getRegistry(this.hostName, this.port);
             registar = (IRegistar) myRegistry.lookup("Registar");
-            String token = registar.enrolCF(this);
-            qrCode = createQrInformation(token);
-            ImageIO.write(qrCode, "jpg", new File("image.jpg"));
+            String token = registar.enrollCF(this);
+            return createQrInformation(token);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -71,16 +60,16 @@ public class CateringFacility implements java.io.Serializable {
         sha.update(bytes);
         sha.update(nym.getBytes());
         byte[] hash = sha.digest();
-        QRValues qr = new QRValues(r, buisnessId, toHexString(hash));
+        QRValues qr = new QRValues(r, businessId, toHexString(hash));
         return qr.convertToImage();
     }
 
-    public String getBuisnessId() {
-        return buisnessId;
+    public String getBusinessId() {
+        return businessId;
     }
 
-    public void setBuisnessId(String buisnessId) {
-        this.buisnessId = buisnessId;
+    public void setBusinessId(String businessId) {
+        this.businessId = businessId;
     }
 
     public String getName() {
@@ -116,11 +105,11 @@ public class CateringFacility implements java.io.Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CateringFacility that = (CateringFacility) o;
-        return Objects.equals(buisnessId, that.buisnessId) && Objects.equals(name, that.name) && Objects.equals(address, that.address);
+        return Objects.equals(businessId, that.businessId) && Objects.equals(name, that.name) && Objects.equals(address, that.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(buisnessId, name, address);
+        return Objects.hash(businessId, name, address);
     }
 }

@@ -51,7 +51,7 @@ public class User {
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
 
 
-            tokens = registar.entrolUser(this.phoneNumber);
+            tokens = registar.enrollUser(this.phoneNumber);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

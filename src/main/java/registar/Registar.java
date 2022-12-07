@@ -53,7 +53,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
 
     @Override
-    public String enrolCF(CateringFacility cf) throws NoSuchAlgorithmException {
+    public String enrollCF(CateringFacility cf) throws NoSuchAlgorithmException {
         // Send a batch of day specific pseudonyms
         secretKeys.putIfAbsent(cf,kg.generateKey());
         return toHexString(getDerivedKey(cf));
@@ -67,7 +67,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
         //KDF
         HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA256Digest());
-        hkdf.init(new HKDFParameters(masterKey, cf.getBuisnessId().getBytes(), date));
+        hkdf.init(new HKDFParameters(masterKey, cf.getBusinessId().getBytes(), date));
         byte[] key = new byte[2048];
         hkdf.generateBytes(key, 0, 2048 );
 
@@ -81,7 +81,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     
 
     @Override
-    public String[] entrolUser(String phoneNumber) throws Exception{
+    public String[] enrollUser(String phoneNumber) throws Exception{
 
         // Generate & return the tokens it can use.
         String[] tokens = new String[DAILYTOKENCOUNT];
