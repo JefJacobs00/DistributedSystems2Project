@@ -1,5 +1,7 @@
 package users;
 
+import org.apache.commons.io.FilenameUtils;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -42,7 +44,13 @@ public class CateringFacilityGUI extends JFrame{
     private Map<String, JTextField> genQrFields;
     private JButton submitRegistrationButton;
 
+    private JButton saveQrButton;
+
+    private BufferedImage qrBufferedImage;
+
     private JButton generateQrButton;
+
+    private JButton clearQrButton;
 
     private JLabel qrImage;
 
@@ -69,10 +77,10 @@ public class CateringFacilityGUI extends JFrame{
             public void stateChanged(ChangeEvent e) {
                 switch (mainPanel.getSelectedIndex()) {
                     case 0:
-                        mainPanel.setSize(new Dimension(750, 300));
+                        mainPanel.setSize(new Dimension(900, 300));
                         break;
                     case 1:
-                        mainPanel.setSize(new Dimension(750, 500));
+                        mainPanel.setSize(new Dimension(900, 500));
                         break;
                 }
             }
@@ -100,6 +108,9 @@ public class CateringFacilityGUI extends JFrame{
 
         qrImage = new JLabel();
 
+        saveQrButton = new JButton("QR code opslaan");
+        clearQrButton = new JButton("Clear QR");
+
         generateQrButton = new JButton("Generate");
         generateQrButton.setMargin(new Insets(10, 10, 10, 10));
 
@@ -116,21 +127,62 @@ public class CateringFacilityGUI extends JFrame{
         generateFormPanel.add(businessIdTextField);
         generateFormPanel.add(generateQrButton);
 
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(1, 2, 10, 10));
+
+        buttonsPanel.add(saveQrButton);
+        buttonsPanel.add(clearQrButton);
+
         generateQrPanel.setLayout(new BorderLayout());
         generateQrPanel.setBorder(margin);
         generateQrPanel.add(generateFormPanel, BorderLayout.PAGE_START);
         generateQrPanel.add(qrImage, BorderLayout.CENTER);
-
+        generateQrPanel.add(buttonsPanel, BorderLayout.PAGE_END);
+        saveQrButton.setVisible(false);
+        clearQrButton.setVisible(false);
+        saveQrButton.addActionListener(this::saveQrButtonClicked);
         generateQrButton.addActionListener(this::generateQrButtonClicked);
+        clearQrButton.addActionListener(this::clearQrButtonClicked);
     }
 
     private void generateQr(CateringFacility cateringFacility){
-        BufferedImage qrCode = cateringFacility.requestQrCode();
-        qrImage.setIcon(new ImageIcon(qrCode));
+        qrBufferedImage = cateringFacility.requestQrCode();
+        qrImage.setIcon(new ImageIcon(qrBufferedImage));
+        saveQrButton.setVisible(true);
+        clearQrButton.setVisible(true);
     }
 
-    private void saveQrCode(BufferedImage qrImage, String filePath) throws IOException {
-        ImageIO.write(qrImage, "jpg", new File(filePath));
+    private void clearQr(){
+        qrBufferedImage = null;
+        saveQrButton.setVisible(false);
+        clearQrButton.setVisible(false);
+        qrImage.setIcon(null);
+    }
+
+    private void clearQrButtonClicked(java.awt.event.ActionEvent evt){
+        clearQr();
+    }
+
+    private void saveQrButtonClicked(java.awt.event.ActionEvent evt){
+        try {
+            saveQrCode(qrBufferedImage);
+        } catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    private void saveQrCode(BufferedImage qrImage) throws IOException {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("."));
+        int returnVal = fileChooser.showSaveDialog(null);
+        if ( returnVal == JFileChooser.APPROVE_OPTION ){
+            File file = fileChooser.getSelectedFile();
+            if (!FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("jpg")) {
+                file = new File(file.toString() + ".xml");
+                file = new File(file.getParentFile(), FilenameUtils.getBaseName(file.getName())+".jpg");
+            }
+            ImageIO.write(qrImage, "jpg", file);
+        }
     }
 
     private void generateQrButtonClicked(java.awt.event.ActionEvent evt){
