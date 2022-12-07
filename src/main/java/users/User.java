@@ -9,26 +9,16 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
-import mixingServer.MixingServer;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.spec.SecretKeySpec;
 import javax.imageio.ImageIO;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.*;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import static org.bouncycastle.util.encoders.Hex.toHexString;
@@ -58,7 +48,7 @@ public class User {
         }
     }
 
-    public QRValues readQRCode(String filePath) throws IOException, NotFoundException {
+    public QRValues readQRCodeFromFilePath(String filePath) throws IOException, NotFoundException {
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
                 new BufferedImageLuminanceSource(
                         ImageIO.read(new FileInputStream(filePath)))));
@@ -78,7 +68,7 @@ public class User {
 
     }
 
-    private QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
+    public QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
         LuminanceSource source = new BufferedImageLuminanceSource(qrcode);
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
         Result qrCodeResult = new MultiFormatReader().decode(bitmap);
