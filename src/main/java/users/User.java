@@ -18,6 +18,8 @@ import java.security.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ public class User {
     public User(String phoneNumber){
         this.phoneNumber = phoneNumber;
         this.start();
+        this.logs = new HashMap<>();
     }
 
     public synchronized void start(){
@@ -65,14 +68,19 @@ public class User {
         return sendCapsule(createCapsule(qr));
     }
 
+
+
     //TODO export the logs of the user to a desired file
-    public void ExportLogs(String path){
+    public void exportLogs(String path){
 
     }
 
     public void leaveFacility(){
         currentLog.endVisitInterval(LocalDateTime.now());
         //Add to logs
+        List logsToday = logs.get(LocalDate.now());
+        if(logsToday == null)
+            logs.put(LocalDate.now(), new ArrayList<>());
         logs.get(LocalDate.now()).add(currentLog);
         currentLog = null;
     }

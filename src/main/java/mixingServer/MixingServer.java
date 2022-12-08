@@ -45,7 +45,6 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
             signature.update(capsule.getCfHash().getBytes());
             return toHexString(signature.sign());
         }
-
         return "Invalid token";
     }
 }

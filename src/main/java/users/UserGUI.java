@@ -139,12 +139,14 @@ public class UserGUI extends JFrame {
         qrImage.setIcon(null);
 
         // TODO - add logic to leave facility
+        user.leaveFacility();
+        mainPanel.setSelectedIndex(0);
     }
 
     private void readQrCode() throws IOException, NotFoundException, SignatureException, InvalidKeyException {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("."));
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Images", "jpg", "png", "gif", "bmp"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Images", "jpg", "png", "gif", "bmp"));
         int returnVal = fileChooser.showOpenDialog(null);
         if ( returnVal == JFileChooser.APPROVE_OPTION ){
             File file = fileChooser.getSelectedFile();

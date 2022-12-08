@@ -178,7 +178,7 @@ public class CateringFacilityGUI extends JFrame{
         if ( returnVal == JFileChooser.APPROVE_OPTION ){
             File file = fileChooser.getSelectedFile();
             if (!FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("jpg")) {
-                file = new File(file.toString() + ".xml");
+                file = new File(file.toString() + ".jpg");
                 file = new File(file.getParentFile(), FilenameUtils.getBaseName(file.getName())+".jpg");
             }
             ImageIO.write(qrImage, "jpg", file);
