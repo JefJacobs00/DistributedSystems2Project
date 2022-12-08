@@ -1,9 +1,6 @@
 package users;
 
-import Globals.Capsule;
-import Globals.QRValues;
-import Globals.SignedData;
-import Globals.TimeInterval;
+import Globals.*;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
@@ -20,6 +17,8 @@ import java.rmi.registry.Registry;
 import java.security.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 
 import static org.bouncycastle.util.encoders.Hex.toHexString;
 
@@ -29,6 +28,10 @@ public class User {
 
     private IRegistar registar;
     private IMixingServer mixingServer;
+
+    private UserLog currentLog;
+
+    private Map<String, List<UserLog>> logs;
 
     public User(String phoneNumber){
         this.phoneNumber = phoneNumber;
@@ -66,6 +69,11 @@ public class User {
 
     }
 
+    public void leaveFacility(){
+        currentLog.endVisitInterval(LocalDateTime.now());
+        //Add to logs
+    }
+
     public QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
         LuminanceSource source = new BufferedImageLuminanceSource(qrcode);
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
@@ -83,6 +91,7 @@ public class User {
     }
 
     private String sendCapsule(Capsule capsule) throws SignatureException, RemoteException, InvalidKeyException {
+        this.currentLog = new UserLog(capsule.getUserToken().getSignature(),capsule.getCfHash(),0,capsule.getInterval());
         return mixingServer.receiveCapsule(capsule);
     }
 

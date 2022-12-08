@@ -1,5 +1,7 @@
 package Globals;
 
+import java.time.LocalDateTime;
+
 public class UserLog implements java.io.Serializable {
     public String userToken;
     public String cfHash;
@@ -27,5 +29,9 @@ public class UserLog implements java.io.Serializable {
 
     public TimeInterval getVisitInterval() {
         return visitInterval;
+    }
+
+    public void endVisitInterval(LocalDateTime end){
+        visitInterval.setEnd(end);
     }
 }

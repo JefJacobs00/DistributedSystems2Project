@@ -39,7 +39,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
         // Check validity (user token, day, spent)
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
-        boolean isSpend = spentTokens.contains(capsule.getUserToken());
+        boolean isSpend = spentTokens.contains(capsule.getUserToken().getSignature());
         if(isTokenValid && !isSpend){
             spentTokens.add(capsule.getUserToken().getSignature());
             signature.update(capsule.getCfHash().getBytes());
