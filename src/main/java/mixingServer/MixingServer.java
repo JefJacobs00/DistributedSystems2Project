@@ -1,5 +1,6 @@
 package mixingServer;
 
+import interfaceRMI.IMatchingService;
 import interfaceRMI.IMixingServer;
 import Globals.Capsule;
 import interfaceRMI.IRegistar;
@@ -13,12 +14,16 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
 public class MixingServer extends UnicastRemoteObject implements IMixingServer {
     private IRegistar registar;
+    private IMatchingService matchingService;
     private ArrayList<String> spentTokens;
+
+    private List<Capsule> receivedCapsules;
 
     private KeyPair keyPair;
     private Signature signature;
@@ -32,12 +37,14 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
 
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
+        matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
         spentTokens = new ArrayList<>();
     }
 
     @Override
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
         // Check validity (user token, day, spent)
+        receivedCapsules.add(capsule);
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
         boolean isSpend = spentTokens.contains(capsule.getUserToken().getSignature());
         if(isTokenValid && !isSpend){
@@ -46,5 +53,9 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
             return toHexString(signature.sign());
         }
         return "Invalid token";
+    }
+
+    public void FlushCapsules() throws RemoteException {
+        matchingService.receiveFlushedCapsules(receivedCapsules);
     }
 }

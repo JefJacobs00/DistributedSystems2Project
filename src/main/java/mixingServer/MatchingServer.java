@@ -1,5 +1,6 @@
 package mixingServer;
 
+import Globals.Capsule;
 import Globals.SignedData;
 import Globals.TimeInterval;
 import Globals.UserLog;
@@ -23,10 +24,15 @@ import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 public class MatchingServer extends UnicastRemoteObject implements IMatchingService {
 
     private IRegistar registar;
+
+    private List<Capsule> capsules;
+
+    private Map<String, List<String>> unInformedTokens;
     Map<String, List<TimeInterval>> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
+        capsules = new ArrayList<>();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -34,7 +40,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     }
 
     @Override
-    public void receiveSignedUserLogs(SignedData signedData) throws RemoteException, NoSuchAlgorithmException {
+    public void receiveInfectedUserLogs(SignedData signedData) throws RemoteException, NoSuchAlgorithmException {
         if (!(signedData.getData() instanceof Collection<?>)){
             throw new IllegalArgumentException("Received data is of invalid type");
         }
@@ -49,9 +55,32 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
             }
 
             validateLog(log, nyms.get(day));
+            if(unInformedTokens.containsKey(log.cfHash)){
+                unInformedTokens.get(log.cfHash).remove(log.userToken);
+            }
 
             appendCriticalPlaces(log);
+            // Get the Capsules that have overlapping time intervals at same place
+            markTokensUninformed(log.cfHash, log.visitInterval);
         }
+    }
+
+    private void markTokensUninformed(String cateringFacilityHash, TimeInterval interval){
+        for (Capsule capsule: capsules) {
+            if (capsule.getCfHash().equals(cateringFacilityHash) && timeIntervalOverlap(interval, capsule.getInterval())){
+                unInformedTokens.putIfAbsent(cateringFacilityHash, new ArrayList<>());
+                unInformedTokens.get(cateringFacilityHash).add(capsule.getUserToken().getSignature());
+            }
+        }
+    }
+
+    private boolean timeIntervalOverlap(TimeInterval t1, TimeInterval t2){
+        return !t2.getEnd().isBefore(t1.getStart()) && !t2.getStart().isAfter(t1.getEnd()); // overlap
+    }
+
+    @Override
+    public void receiveFlushedCapsules(List<Capsule> capsuleList) throws RemoteException {
+        capsules.addAll(capsuleList);
     }
 
     private void appendCriticalPlaces(UserLog log){

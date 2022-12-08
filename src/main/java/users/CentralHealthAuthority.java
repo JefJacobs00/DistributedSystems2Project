@@ -4,8 +4,6 @@ import Globals.SignedData;
 import Globals.UserLog;
 import interfaceRMI.ICentralHealthAuthority;
 import interfaceRMI.IMatchingService;
-import interfaceRMI.IRegistar;
-import mixingServer.MatchingServer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -62,7 +60,7 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
 
         SignedData data = new SignedData(signedLogs, logs);
 
-        matchingServer.receiveSignedUserLogs(data);
+        matchingServer.receiveInfectedUserLogs(data);
     }
 
     public void sendLogs(){
