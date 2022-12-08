@@ -36,12 +36,12 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
 
-        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
-        matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
+        //Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        //matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
     }
 
     public String start() throws RemoteException, AlreadyBoundException {
-        Registry registry = LocateRegistry.createRegistry(1099);
+        Registry registry = LocateRegistry.getRegistry(1099);
         SecureRandom s = new SecureRandom();
         String name = ""+s.nextInt();
         name = name.substring(name.length() > 5 ?name.length() -5: name.length());
@@ -50,7 +50,7 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
         return name;
     }
 
-    private void sendUserLogsToMatchingServer(List<UserLog> logs) throws IOException, InvalidKeyException, SignatureException {
+    private void sendUserLogsToMatchingServer(List<UserLog> logs) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(bos);
         oos.writeObject(logs);

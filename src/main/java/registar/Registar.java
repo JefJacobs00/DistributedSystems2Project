@@ -28,7 +28,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     // Mapping between user and issued tokens
     private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
-    private HashMap<String , String[]> facilitySynonyms;
+    private HashMap<LocalDate , List<String>> facilitySynonyms;
 
     private KeyGenerator kg;
     private Signature signature;
@@ -49,6 +49,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         users = new HashMap<String, SignedData[]>();
         secretKeys = new HashMap<>();
         dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        facilitySynonyms = new HashMap<>();
     }
 
 
@@ -56,7 +57,17 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     public String enrollCF(CateringFacility cf) throws NoSuchAlgorithmException {
         // Send a batch of day specific pseudonyms
         secretKeys.putIfAbsent(cf,kg.generateKey());
-        return toHexString(getDerivedKey(cf));
+        byte[] derivedKey = getDerivedKey(cf);
+        String nym = getFacilityNym(derivedKey, cf, LocalDate.now());
+
+        if(!facilitySynonyms.containsKey(LocalDate.now())){
+            facilitySynonyms.put(LocalDate.now(), new ArrayList<String>());
+        }
+
+        List<String> nyms = facilitySynonyms.get(LocalDate.now());
+        nyms.add(nym);
+
+        return nym;
     }
 
     public byte[] getDerivedKey(CateringFacility cf) throws NoSuchAlgorithmException {
@@ -71,12 +82,16 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         byte[] key = new byte[2048];
         hkdf.generateBytes(key, 0, 2048 );
 
-        MessageDigest sha = MessageDigest.getInstance("SHA-256");
-        sha.update(key);
-        sha.update(cf.getAddress().getBytes());
-        sha.update(date);
+        return key;
+    }
 
-        return sha.digest();
+    private String getFacilityNym(byte[] derivedKey, CateringFacility cf, LocalDate day) throws NoSuchAlgorithmException {
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        sha.update(derivedKey);
+        sha.update(cf.getAddress().getBytes());
+        sha.update(day.toString().getBytes());
+
+        return toHexString(sha.digest());
     }
     
 
@@ -127,7 +142,14 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return signature.verify(tokenBytes);
     }
 
+    @Override
+    public List<String> getNymsForDay(LocalDate day) throws RemoteException {
+        if(!this.facilitySynonyms.containsKey(day)){
+            throw new IllegalArgumentException("No nyms for day: "+ day.toString());
+        }
 
+        return facilitySynonyms.get(day);
+    }
 
 
 }
