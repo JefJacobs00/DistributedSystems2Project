@@ -29,4 +29,9 @@ public class TimeInterval implements java.io.Serializable {
     public void setEnd(LocalDateTime end) {
         this.end = end;
     }
+
+    public boolean hasOverlap(TimeInterval t2){
+        return !t2.getEnd().isBefore(this.getStart()) && !t2.getStart().isAfter(this.getEnd()); // overlap
+    }
+
 }

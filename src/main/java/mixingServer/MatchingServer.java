@@ -1,12 +1,8 @@
 package mixingServer;
 
-import Globals.Capsule;
-import Globals.SignedData;
-import Globals.TimeInterval;
-import Globals.UserLog;
+import Globals.*;
 import interfaceRMI.IMatchingService;
 import interfaceRMI.IRegistar;
-import users.User;
 
 import java.nio.ByteBuffer;
 import java.rmi.NotBoundException;
@@ -28,7 +24,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     private List<Capsule> capsules;
 
     private Map<String, List<String>> unInformedTokens;
-    Map<String, List<TimeInterval>> criticalFacilities;
+    private  List<CriticalTuples> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
@@ -59,23 +55,25 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
                 unInformedTokens.get(log.cfHash).remove(log.userToken);
             }
 
-            appendCriticalPlaces(log);
-            // Get the Capsules that have overlapping time intervals at same place
+            appendCriticalTuples(log);
+
+            // mark tokens that where at the facility at the critical time
             markTokensUninformed(log.cfHash, log.visitInterval);
         }
     }
 
+    public void sendUninformedTokensToRegistar(){
+        // TODO send uninformed to registar
+    }
+
+
     private void markTokensUninformed(String cateringFacilityHash, TimeInterval interval){
         for (Capsule capsule: capsules) {
-            if (capsule.getCfHash().equals(cateringFacilityHash) && timeIntervalOverlap(interval, capsule.getInterval())){
+            if (capsule.getCfHash().equals(cateringFacilityHash) && interval.hasOverlap(capsule.getInterval())){
                 unInformedTokens.putIfAbsent(cateringFacilityHash, new ArrayList<>());
                 unInformedTokens.get(cateringFacilityHash).add(capsule.getUserToken().getSignature());
             }
         }
-    }
-
-    private boolean timeIntervalOverlap(TimeInterval t1, TimeInterval t2){
-        return !t2.getEnd().isBefore(t1.getStart()) && !t2.getStart().isAfter(t1.getEnd()); // overlap
     }
 
     @Override
@@ -83,12 +81,8 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         capsules.addAll(capsuleList);
     }
 
-    private void appendCriticalPlaces(UserLog log){
-        if (!criticalFacilities.containsKey(log.cfHash)){
-            criticalFacilities.put(log.cfHash, new ArrayList<>());
-        }
-
-        criticalFacilities.get(log.cfHash).add(log.visitInterval);
+    private void appendCriticalTuples(UserLog log){
+        criticalFacilities.add(new CriticalTuples(log.cfHash, log.visitInterval));
     }
 
     private void validateLog(UserLog log, List<String> nyms) throws NoSuchAlgorithmException {

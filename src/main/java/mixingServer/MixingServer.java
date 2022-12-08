@@ -13,6 +13,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
 
     @Override
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
-        // Check validity (user token, day, spent)
+        capsule.getInterval().setStart(LocalDateTime.now());
         receivedCapsules.add(capsule);
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
         boolean isSpend = spentTokens.contains(capsule.getUserToken().getSignature());
@@ -57,5 +58,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
 
     public void FlushCapsules() throws RemoteException {
         matchingService.receiveFlushedCapsules(receivedCapsules);
+        receivedCapsules = new ArrayList<>();
+        spentTokens = new ArrayList<>();
     }
 }
