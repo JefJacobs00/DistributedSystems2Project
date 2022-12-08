@@ -146,10 +146,15 @@ public class CateringFacilityGUI extends JFrame{
     }
 
     private void generateQr(CateringFacility cateringFacility){
-        qrBufferedImage = cateringFacility.requestQrCode();
-        qrImage.setIcon(new ImageIcon(qrBufferedImage));
-        saveQrButton.setVisible(true);
-        clearQrButton.setVisible(true);
+        try {
+            qrBufferedImage = cateringFacility.requestQrCode();
+            qrImage.setIcon(new ImageIcon(qrBufferedImage));
+            saveQrButton.setVisible(true);
+            clearQrButton.setVisible(true);
+        } catch (RuntimeException ex){
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+        }
     }
 
     private void clearQr(){
@@ -307,11 +312,16 @@ public class CateringFacilityGUI extends JFrame{
                 || !verifyStringNumber(zipCode)){
             JOptionPane.showMessageDialog(this, "Gelieve een geldige postcode op te geven");
         } else {
-            String fullAddressString = String.format("%s, %s %s, %s", address, zipCode, city, country);
-            CateringFacility cateringFacility = new CateringFacility(businessId, name, fullAddressString, phoneNumber, "localhost", 1099);
-            mainPanel.setSelectedIndex(1);
-            genQrFields.get("businessId").setText(cateringFacility.getBusinessId());
-            generateQr(cateringFacility);
+            try {
+                String fullAddressString = String.format("%s, %s %s, %s", address, zipCode, city, country);
+                CateringFacility cateringFacility = new CateringFacility(businessId, name, fullAddressString, phoneNumber, "localhost", 1099);
+                mainPanel.setSelectedIndex(1);
+                genQrFields.get("businessId").setText(cateringFacility.getBusinessId());
+                generateQr(cateringFacility);
+            } catch (RuntimeException ex){
+                JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+                ex.printStackTrace();
+            }
         }
     }
 

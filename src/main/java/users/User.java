@@ -4,6 +4,7 @@ import Globals.*;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import interfaceRMI.ICentralHealthAuthority;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
 
@@ -11,6 +12,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -73,6 +75,12 @@ public class User {
     //TODO export the logs of the user to a desired file
     public void exportLogs(String path){
 
+    }
+
+    public void sendLogs(String chaIdentifier) throws RemoteException, NotBoundException {
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        ICentralHealthAuthority cha = (ICentralHealthAuthority) myRegistry.lookup(chaIdentifier);
+        cha.receiveUserLogs(logs);
     }
 
     public void leaveFacility(){

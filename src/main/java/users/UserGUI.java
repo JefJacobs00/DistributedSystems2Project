@@ -16,6 +16,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.text.ParseException;
@@ -32,15 +34,11 @@ public class UserGUI extends JFrame {
     private JPanel registrationParentPanel;
 
     private JPanel registrationPanel;
+    private JPanel regJPanel;
 
     private JPanel readQrParentPanel;
 
     private JPanel readQrPanel;
-
-    private JPanel regJPanel;
-
-    private JTextField phoneNumberTextField;
-    private JButton submitRegistrationButton;
 
     private JButton openQrButton;
 
@@ -52,7 +50,24 @@ public class UserGUI extends JFrame {
 
     private JLabel qrImage;
 
+    private JPanel logSendParentPanel;
+
+    private JPanel logSendPanel;
+
+    private JPanel logJPanel;
+
+    private JTextField healthAuthorityTextField;
+
+    private JButton sendLogsButton;
+
+    private JTextField phoneNumberTextField;
+    private JButton submitRegistrationButton;
+
+    private JLabel logsFeedbackLabel;
+
     private User user;
+
+    private boolean isAuthenticated;
 
     public UserGUI(String title) throws ParseException {
         super(title);
@@ -61,33 +76,98 @@ public class UserGUI extends JFrame {
         this.setLocationRelativeTo(null);
         this.setLayout(null);
         this.setResizable(false);
-
+        this.isAuthenticated = false;
         this.mainPanel = new JTabbedPane();
         this.mainPanel.setBounds(0, 0, 900, 200);
         initRegistrationForm();
         initQrCodeForm();
+        initLogSendForm();
         mainPanel.add("User Registration", registrationParentPanel);
 //        mainPanel.add("QR Code Generator", readQrParentPanel);
 
         this.add(mainPanel);
 
         mainPanel.addChangeListener(new ChangeListener() {
-
             @Override
             public void stateChanged(ChangeEvent e) {
-                switch (mainPanel.getSelectedIndex()) {
-                    case 0:
-                        user = null;
-                        mainPanel.remove(readQrParentPanel);
-                        initQrCodeForm();
-                        mainPanel.setSize(new Dimension(900, 200));
-                        break;
-                    case 1:
-                        mainPanel.setSize(new Dimension(900, 500));
-                        break;
+                Component selectedComponent = mainPanel.getSelectedComponent();
+                if ((registrationParentPanel).equals(selectedComponent)) {
+                    user = null;
+                    mainPanel.remove(2);
+                    mainPanel.remove(1);
+                    mainPanel.setSize(new Dimension(900, 200));
+                } else if (mainPanel.getSelectedIndex() == 1) {
+                    initQrCodeForm();
+                    mainPanel.setSize(new Dimension(900, 500));
+                } else if (mainPanel.getSelectedIndex() == 2) {
+//                    initLogSendForm();
+                    mainPanel.setSize(new Dimension(900, 260));
                 }
             }
         });
+    }
+
+    private void initLogSendForm(){
+        this.logSendPanel = new JPanel();
+        this.logSendParentPanel = new JPanel();
+
+        Border margin = new EmptyBorder(10,10,10,10);
+
+        sendLogsButton = new JButton("Verstuur");
+        sendLogsButton.setMargin(new Insets(10, 10, 10, 10));
+
+        logsFeedbackLabel = new JLabel();
+        logsFeedbackLabel.setBorder(margin);
+
+        logSendParentPanel.setLayout(new BorderLayout());
+
+        JLabel titleLabel = new JLabel("Verstuur gebruikerslogs");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setBorder(margin);
+
+        logSendParentPanel.add(titleLabel, BorderLayout.PAGE_START);
+        logSendParentPanel.add(logSendPanel, BorderLayout.CENTER);
+        logSendParentPanel.add(logsFeedbackLabel, BorderLayout.PAGE_END);
+
+        logSendPanel.setLayout(new GridLayout(2, 2, 10, 10));
+        logSendPanel.setBorder(margin);
+
+
+        logJPanel = new JPanel();
+        logJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Gezondheidsorganisatie"), margin));
+        logJPanel.setLayout(new GridLayout(1, 2, 10, 10));
+
+        sendLogsButton.addActionListener(this::sendLogsButtonClicked);
+
+        JLabel healthAuthorityLabel = new JLabel("Gezondheidsorganisatie-ID");
+        healthAuthorityTextField = new JTextField("");
+
+        logJPanel.add(healthAuthorityLabel);
+        logJPanel.add(healthAuthorityTextField);
+
+        logSendPanel.add(logJPanel);
+        logSendPanel.add(sendLogsButton);
+    }
+
+    private void sendLogsButtonClicked(java.awt.event.ActionEvent evt) {
+        String chaIdentifier = healthAuthorityTextField.getText();
+        if(chaIdentifier.equals("")){
+            JOptionPane.showMessageDialog(this, "Gelieve een geldige identifier op te geven");
+        } else {
+            try {
+                user.sendLogs(chaIdentifier);
+                logsFeedbackLabel.setText("Logs zijn succesvol verstuurd");
+                logsFeedbackLabel.setForeground(Color.GREEN);
+            } catch (NotBoundException ex){
+                logsFeedbackLabel.setText("Er is geen gezondheidsorganisatie aan dit ID gekoppeld");
+                logsFeedbackLabel.setForeground(Color.RED);
+                ex.printStackTrace();
+            } catch (RemoteException ex) {
+                logsFeedbackLabel.setText("Er is iets foutgelopen bij de server");
+                logsFeedbackLabel.setForeground(Color.RED);
+                ex.printStackTrace();
+            }
+        }
     }
 
     private void initQrCodeForm(){
@@ -137,8 +217,6 @@ public class UserGUI extends JFrame {
     private void leaveFacility(){
         qrBufferedImage = null;
         qrImage.setIcon(null);
-
-        // TODO - add logic to leave facility
         user.leaveFacility();
         mainPanel.setSelectedIndex(0);
     }
@@ -216,9 +294,16 @@ public class UserGUI extends JFrame {
                 || !verifyPhoneNumber(phoneNumber)){
             JOptionPane.showMessageDialog(this, "Gelieve een geldig telefoonnummer op te geven");
         } else {
-            user = new User(phoneNumber);
-            mainPanel.add("QR Code Generator", readQrParentPanel);
-            mainPanel.setSelectedIndex(1);
+            try {
+                user = new User(phoneNumber);
+                this.isAuthenticated = true;
+                mainPanel.add("QR Code Generator", readQrParentPanel);
+                mainPanel.add("Log informatie", logSendParentPanel);
+                mainPanel.setSelectedIndex(1);
+            } catch (RuntimeException ex){
+                JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+                ex.printStackTrace();
+            }
         }
     }
 
