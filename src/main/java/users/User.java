@@ -15,6 +15,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -31,7 +32,7 @@ public class User {
 
     private UserLog currentLog;
 
-    private Map<String, List<UserLog>> logs;
+    private Map<LocalDate, List<UserLog>> logs;
 
     public User(String phoneNumber){
         this.phoneNumber = phoneNumber;
@@ -72,6 +73,8 @@ public class User {
     public void leaveFacility(){
         currentLog.endVisitInterval(LocalDateTime.now());
         //Add to logs
+        logs.get(LocalDate.now()).add(currentLog);
+        currentLog = null;
     }
 
     public QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
