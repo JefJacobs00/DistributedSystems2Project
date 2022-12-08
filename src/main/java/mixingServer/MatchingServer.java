@@ -9,7 +9,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class MatchingServer extends UnicastRemoteObject implements IMatchingService {
 
-    protected MatchingServer() throws RemoteException {
+    public MatchingServer() throws RemoteException {
     }
 
     @Override

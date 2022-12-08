@@ -1,5 +1,6 @@
 package registar;
 
+import mixingServer.MatchingServer;
 import mixingServer.MixingServer;
 
 import java.rmi.RemoteException;
@@ -17,6 +18,7 @@ public class Main {
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.bind("Registar", new Registar());
             registry.bind("MixingServer", new MixingServer());
+            registry.bind("MatchingServer", new MatchingServer());
         } catch (Exception e) {
             e.printStackTrace();
         }

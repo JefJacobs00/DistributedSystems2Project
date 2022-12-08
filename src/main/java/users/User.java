@@ -98,11 +98,11 @@ public class User {
         LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).minusMinutes(LocalDateTime.now().getMinute()%30);
         int index = (time.getHour()*60 + time.getMinute())/30;
 
+        this.currentLog = new UserLog(tokens[index].getSignature(),qr.getHash(),qr.getRandomNumber(),getCurrentTimeInterval());
         return new Capsule(getCurrentTimeInterval(),tokens[index],qr.getHash());
     }
 
     private String sendCapsule(Capsule capsule) throws SignatureException, RemoteException, InvalidKeyException {
-        this.currentLog = new UserLog(capsule.getUserToken().getSignature(),capsule.getCfHash(),0,capsule.getInterval());
         return mixingServer.receiveCapsule(capsule);
     }
 
