@@ -10,6 +10,7 @@ import mixingServer.MatchingServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -33,6 +34,14 @@ public class CentralHealthAuthority implements ICentralHealthAuthority {
 
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
+    }
+
+    public String start() throws RemoteException, AlreadyBoundException {
+        Registry registry = LocateRegistry.createRegistry(1099);
+        String name = "";
+        registry.bind(name, new MatchingServer());
+
+        return name;
     }
 
     public void sendUserLogsToMatchingServer(List<UserLog> logs) throws IOException, InvalidKeyException, SignatureException {
