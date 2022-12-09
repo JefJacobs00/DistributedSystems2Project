@@ -1,7 +1,6 @@
 package users;
 
 import com.google.zxing.NotFoundException;
-import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -10,7 +9,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -21,10 +19,6 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +61,8 @@ public class UserGUI extends JFrame {
 
     private User user;
 
+    private boolean isCritical;
+
     private boolean isAuthenticated;
 
     public UserGUI(String title) throws ParseException {
@@ -95,6 +91,8 @@ public class UserGUI extends JFrame {
                     initQrCodeForm();
                     initLogSendForm();
                     user = null;
+                    initQrCodeForm();
+                    initLogSendForm();
                     mainPanel.remove(2);
                     mainPanel.remove(1);
                     mainPanel.setSize(new Dimension(900, 200));
@@ -237,6 +235,7 @@ public class UserGUI extends JFrame {
             }
             confirmationLabel.setText(confirmationText);
         }
+        readQrPanel.repaint();
     }
 
     private void openQrButtonClicked(java.awt.event.ActionEvent evt){
@@ -296,6 +295,7 @@ public class UserGUI extends JFrame {
         } else {
             try {
                 user = new User(phoneNumber);
+
                 this.isAuthenticated = true;
                 mainPanel.add("QR Code Generator", readQrParentPanel);
                 mainPanel.add("Log informatie", logSendParentPanel);
@@ -303,6 +303,11 @@ public class UserGUI extends JFrame {
             } catch (RuntimeException ex){
                 JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
                 ex.printStackTrace();
+            }
+            try {
+                this.isCritical = user.checkInfected();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         }
     }
