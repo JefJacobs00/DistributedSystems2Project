@@ -5,8 +5,6 @@ import interfaceRMI.IMixingServer;
 import Globals.Capsule;
 import interfaceRMI.IRegistar;
 
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import java.io.InvalidObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -57,6 +55,11 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
             return toHexString(signature.sign());
         }
         return "Invalid token";
+    }
+
+    @Override
+    public void sendInformedToken(String token) throws RemoteException {
+        matchingService.receiveInformedToken(token);
     }
 
     public void flushCapsules() throws RemoteException {

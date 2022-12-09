@@ -73,11 +73,35 @@ public class User {
         return sendCapsule(createCapsule(qr));
     }
 
-    public void checkInfected(){
+    public boolean checkInfected() throws RemoteException {
+        List<String> tokens = getInfectedTokens();
+        for (String token : tokens) {
+            mixingServer.sendInformedToken(token);
+        }
 
+        return tokens.size() > 0;
     }
-    private void getCriticalFacilities(){
+    private List<String> getInfectedTokens() throws RemoteException {
+        List<CriticalTuple> criticalFacilities = matchingService.getCriticalTuples();
+        List<String> tokens = new ArrayList<>();
+        for (CriticalTuple criticalTuple: criticalFacilities) {
+            String token = getTokenFromLogs(criticalTuple);
+            if(token != null){
+                tokens.add(token);
+            }
+        }
 
+        return tokens;
+    }
+
+    private String getTokenFromLogs(CriticalTuple tuple){
+        LocalDate day = tuple.getTimeInterval().getStart().toLocalDate();
+        for (UserLog log: logs.get(day)) {
+            if (log.cfHash.equals(tuple.getCateringFacilityHash()) && log.visitInterval.hasOverlap(tuple.getTimeInterval()))
+                return log.userToken;
+        }
+
+        return null;
     }
 
 
