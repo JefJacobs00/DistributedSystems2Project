@@ -34,4 +34,11 @@ public class TimeInterval implements java.io.Serializable {
         return !t2.getEnd().isBefore(this.getStart()) && !t2.getStart().isAfter(this.getEnd()); // overlap
     }
 
+    @Override
+    public String toString() {
+        return "TimeInterval{" +
+                "start=" + start +
+                ", end=" + end +
+                '}';
+    }
 }

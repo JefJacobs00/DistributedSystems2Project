@@ -5,6 +5,7 @@ import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import interfaceRMI.ICentralHealthAuthority;
+import interfaceRMI.IMatchingService;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
 
@@ -33,6 +34,7 @@ public class User {
 
     private IRegistar registar;
     private IMixingServer mixingServer;
+    private IMatchingService matchingService;
 
     private UserLog currentLog;
 
@@ -49,6 +51,7 @@ public class User {
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
             registar = (IRegistar) myRegistry.lookup("Registar");
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
+            matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
             tokens = registar.enrollUser(this.phoneNumber);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -68,6 +71,13 @@ public class User {
     public String visitFacility(BufferedImage qrcode) throws NotFoundException, SignatureException, RemoteException, InvalidKeyException {
         QRValues qr = readQRImage(qrcode);
         return sendCapsule(createCapsule(qr));
+    }
+
+    public void checkInfected(){
+
+    }
+    private void getCriticalFacilities(){
+
     }
 
 

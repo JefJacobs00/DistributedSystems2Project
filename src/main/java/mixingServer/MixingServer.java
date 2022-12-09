@@ -40,6 +40,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         registar = (IRegistar) myRegistry.lookup("Registar");
         matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
         spentTokens = new ArrayList<>();
+        receivedCapsules = new ArrayList<>();
     }
 
     @Override

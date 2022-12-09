@@ -81,6 +81,11 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         capsules.addAll(capsuleList);
     }
 
+    @Override
+    public List<CriticalTuples> getCriticalTuples() throws RemoteException {
+        return null;
+    }
+
     private void appendCriticalTuples(UserLog log){
         criticalFacilities.add(new CriticalTuples(log.cfHash, log.visitInterval));
     }

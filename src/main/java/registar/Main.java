@@ -19,8 +19,9 @@ public class Main {
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.bind("Registar", new Registar());
-            registry.bind("MixingServer", new MixingServer());
             registry.bind("MatchingServer", new MatchingServer());
+            registry.bind("MixingServer", new MixingServer());
+
             CentralHealthAuthority cha = new CentralHealthAuthority("localhost", 1099);
             System.out.println(cha.start());
         } catch (Exception e) {

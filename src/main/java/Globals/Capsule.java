@@ -35,4 +35,13 @@ public class Capsule implements java.io.Serializable {
     public void setCfHash(String cfHash) {
         this.cfHash = cfHash;
     }
+
+    @Override
+    public String toString() {
+        return "Capsule{" +
+                "interval=" + interval +
+                ", userToken=" + userToken +
+                ", cfHash='" + cfHash + '\'' +
+                '}';
+    }
 }
