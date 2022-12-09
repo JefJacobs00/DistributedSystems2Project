@@ -26,6 +26,7 @@ import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 public class Registar extends UnicastRemoteObject implements IRegistar {
     // Mapping between user and issued tokens
+    //users, facili, per dag, secret key
     private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
     private HashMap<LocalDate , List<String>> facilitySynonyms;
