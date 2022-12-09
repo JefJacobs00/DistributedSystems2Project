@@ -24,4 +24,9 @@ public class SignedData implements java.io.Serializable{
     public void setData(Object data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "Signed Data: " + signature;
+    }
 }

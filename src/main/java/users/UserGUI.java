@@ -92,15 +92,15 @@ public class UserGUI extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 Component selectedComponent = mainPanel.getSelectedComponent();
                 if ((registrationParentPanel).equals(selectedComponent)) {
+                    initQrCodeForm();
+                    initLogSendForm();
                     user = null;
                     mainPanel.remove(2);
                     mainPanel.remove(1);
                     mainPanel.setSize(new Dimension(900, 200));
                 } else if (mainPanel.getSelectedIndex() == 1) {
-                    initQrCodeForm();
                     mainPanel.setSize(new Dimension(900, 500));
                 } else if (mainPanel.getSelectedIndex() == 2) {
-//                    initLogSendForm();
                     mainPanel.setSize(new Dimension(900, 260));
                 }
             }

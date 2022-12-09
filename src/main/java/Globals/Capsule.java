@@ -38,10 +38,9 @@ public class Capsule implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "Capsule{" +
-                "interval=" + interval +
-                ", userToken=" + userToken +
-                ", cfHash='" + cfHash + '\'' +
-                '}';
+        return "Capsule: " +
+                "interval:" + interval +
+                ", User Token:" + userToken + ", \n" +
+                "CF Hash:" + cfHash;
     }
 }

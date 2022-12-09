@@ -34,13 +34,15 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         keyPair = keyPairGenerator.generateKeyPair();
         signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(keyPair.getPrivate());
-
-
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
         spentTokens = new ArrayList<>();
-        receivedCapsules = new ArrayList<>();
+        this.receivedCapsules = new ArrayList<>();
+    }
+
+    public List<Capsule> getReceivedCapsules() {
+        return receivedCapsules;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         return "Invalid token";
     }
 
-    public void FlushCapsules() throws RemoteException {
+    public void flushCapsules() throws RemoteException {
         matchingService.receiveFlushedCapsules(receivedCapsules);
         receivedCapsules = new ArrayList<>();
         spentTokens = new ArrayList<>();
