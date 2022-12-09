@@ -78,6 +78,11 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     }
 
     @Override
+    public void receiveInformedToken(String token) throws RemoteException {
+
+    }
+
+    @Override
     public List<CriticalTuple> getCriticalTuples() throws RemoteException {
         return criticalFacilities;
     }
