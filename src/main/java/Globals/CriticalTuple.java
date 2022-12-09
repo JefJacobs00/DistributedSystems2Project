@@ -13,6 +13,14 @@ public class CriticalTuple {
         return cateringFacilityHash;
     }
 
+    public String getCateringFacilityHashShortString() {
+        if(cateringFacilityHash.length() > 20){
+            return cateringFacilityHash.substring(0, 20) + "...";
+        } else {
+            return cateringFacilityHash;
+        }
+    }
+
     public void setCateringFacilityHash(String cateringFacilityHash) {
         this.cateringFacilityHash = cateringFacilityHash;
     }

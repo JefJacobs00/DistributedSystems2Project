@@ -1,7 +1,9 @@
 package registar;
 
 import mixingServer.MatchingServer;
+import mixingServer.MatchingServerGUI;
 import mixingServer.MixingServer;
+import mixingServer.MixingServerGUI;
 import users.CentralHealthAuthority;
 
 import java.rmi.RemoteException;
@@ -11,6 +13,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateFactorySpi;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
+import javax.swing.*;
 
 public class Main {
 
@@ -18,7 +21,11 @@ public class Main {
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.bind("Registar", new Registar());
-            registry.bind("MatchingServer", new MatchingServer());
+            JFrame matchingServerFrame = new MatchingServerGUI("Matching Server");
+            matchingServerFrame.setVisible(true);
+            JFrame mixingServerFrame = new MixingServerGUI("Mixing Server");
+            mixingServerFrame.setVisible(true);
+//            registry.bind("MatchingServer", new MatchingServer());
 //            registry.bind("MixingServer", new MixingServer());
             CentralHealthAuthority cha = new CentralHealthAuthority("localhost", 1099);
             System.out.println(cha.start());

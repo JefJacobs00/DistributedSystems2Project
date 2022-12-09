@@ -30,7 +30,15 @@ public class SignedData implements java.io.Serializable{
         return signature.substring(0, 20) + "...";
     }
 
-    public String toFullString() {
+    public String toShortString() {
+        if(signature.length() > 20){
+            return signature.substring(0, 20) + "...";
+        } else {
+            return signature;
+        }
+    }
+
+    public String toLongString() {
         return signature;
     }
 }

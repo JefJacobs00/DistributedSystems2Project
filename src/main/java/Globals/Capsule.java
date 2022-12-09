@@ -32,6 +32,14 @@ public class Capsule implements java.io.Serializable {
         return cfHash;
     }
 
+    public String getCfHashShortString(){
+        if(cfHash.length() > 20){
+            return cfHash.substring(0, 20) + "...";
+        } else {
+            return cfHash;
+        }
+    }
+
     public void setCfHash(String cfHash) {
         this.cfHash = cfHash;
     }

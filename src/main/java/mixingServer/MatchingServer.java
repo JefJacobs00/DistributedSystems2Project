@@ -23,13 +23,14 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
     private List<Capsule> capsules;
 
-    private List<String> unInformedTokens;
+    private List<String> uninformedTokens;
     private  List<CriticalTuple> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         capsules = new ArrayList<>();
         criticalFacilities = new ArrayList<>();
+        uninformedTokens = new ArrayList<>();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -56,7 +57,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
             // mark tokens that where at the facility at the critical time
             markTokensUninformed(log.cfHash, log.visitInterval);
-            unInformedTokens.remove(log.userToken);
+            uninformedTokens.remove(log.userToken);
         }
     }
 
@@ -68,7 +69,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     private void markTokensUninformed(String cateringFacilityHash, TimeInterval interval){
         for (Capsule capsule: capsules) {
             if (capsule.getCfHash().equals(cateringFacilityHash) && interval.hasOverlap(capsule.getInterval())){
-                unInformedTokens.add(capsule.getUserToken().getSignature());
+                uninformedTokens.add(capsule.getUserToken().getSignature());
             }
         }
     }
@@ -80,7 +81,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
     @Override
     public void receiveInformedToken(String token) throws RemoteException {
-        unInformedTokens.remove(token);
+        uninformedTokens.remove(token);
     }
 
     @Override
@@ -119,5 +120,14 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         buffer.putLong(number);
 
         return buffer.array();
+    }
+
+
+    public List<Capsule> getCapsules() {
+        return capsules;
+    }
+
+    public List<String> getUninformedTokens() {
+        return uninformedTokens;
     }
 }
