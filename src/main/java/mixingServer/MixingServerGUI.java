@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -43,7 +45,7 @@ public class MixingServerGUI extends JFrame {
             registry.bind("MixingServer", mixingServer);
 
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            this.setSize(new Dimension(900, 600));
+            this.setSize(new Dimension(1920, 1080));
             this.setLocationRelativeTo(null);
             this.setLayout(null);
             this.setResizable(false);
@@ -51,20 +53,42 @@ public class MixingServerGUI extends JFrame {
             tableModel = new DefaultTableModel();
 
             this.mainPanel = new JPanel();
-            this.mainPanel.setBounds(0, 0, 900, 400);
+            this.mainPanel.setBounds(0, 0, 1600, 800);
 //            tableColumns=new String[]{"Interval","User Token","Catering Facility Hash"};
             this.receivedCapsulesTable = new JTable(tableModel);
             tableModel.addColumn("Interval");
-            tableModel.addColumn("User Token");
+            tableModel.addColumn("User Token (Signature)");
             tableModel.addColumn("Catering Facility Hash");
+
 
             refreshRows();
             this.flushCapsulesButton = new JButton("Flush capsules");
 
             Border margin = new EmptyBorder(10,10,10,10);
-//            Vector receivedCapsulesVector = new Vector(mixingServer.getReceivedCapsules());
+            receivedCapsulesTable.getColumnModel().getColumn(0).setWidth(500);
+            receivedCapsulesTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(final MouseEvent e) {
+                    if (e.getClickCount() == 1) {
+                        final JTable jTable = (JTable) e.getSource();
+                        int row = receivedCapsulesTable.getSelectedRow();
+                        int col = receivedCapsulesTable.getSelectedColumn();
+                        String value = "";
+                        if(col == 0){
+                            value = mixingServer.getReceivedCapsules().get(row).getInterval().toString();
+                        } else if (col == 1){
+                            value = mixingServer.getReceivedCapsules().get(row).getUserToken().toFullString();
+                        } else if (col == 2){
+                            value = mixingServer.getReceivedCapsules().get(row).getCfHash();
+                        }
+                        JTextArea ta = new JTextArea(value,20,40);
+                        ta.setEditable(false);
+                        ta.setLineWrap(true);
+                        JOptionPane.showMessageDialog(MixingServerGUI.this, ta);
+                    }
+                }
+            });
 
-            receivedCapsulesTable.setEnabled(false);
             JScrollPane tableScroller = new JScrollPane(receivedCapsulesTable);
             receivedCapsulesTable.setBorder(new EmptyBorder(10,10, 10, 10));
             mainPanel.setLayout(new BorderLayout());
@@ -82,7 +106,6 @@ public class MixingServerGUI extends JFrame {
 
             bottomPanel.add(flushCapsulesButton);
             bottomPanel.add(flushFeedbackLabel);
-
 
             mainPanel.add(titleLabel, BorderLayout.PAGE_START);
             mainPanel.add(tableScroller, BorderLayout.CENTER);

@@ -27,6 +27,10 @@ public class SignedData implements java.io.Serializable{
 
     @Override
     public String toString() {
-        return "Signed Data: " + signature;
+        return signature.substring(0, 20) + "...";
+    }
+
+    public String toFullString() {
+        return signature;
     }
 }
