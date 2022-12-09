@@ -46,10 +46,10 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
     @Override
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
         capsule.getInterval().setStart(LocalDateTime.now());
-        receivedCapsules.add(capsule);
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
         boolean isSpend = spentTokens.contains(capsule.getUserToken().getSignature());
         if(isTokenValid && !isSpend){
+            receivedCapsules.add(capsule);
             spentTokens.add(capsule.getUserToken().getSignature());
             signature.update(capsule.getCfHash().getBytes());
             return toHexString(signature.sign());

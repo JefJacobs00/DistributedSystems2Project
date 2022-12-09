@@ -29,6 +29,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         capsules = new ArrayList<>();
+        criticalFacilities = new ArrayList<>();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -75,6 +76,11 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     @Override
     public void receiveFlushedCapsules(List<Capsule> capsuleList) throws RemoteException {
         capsules.addAll(capsuleList);
+    }
+
+    @Override
+    public void receiveInformedToken(String token) throws RemoteException {
+        unInformedTokens.remove(token);
     }
 
     @Override
