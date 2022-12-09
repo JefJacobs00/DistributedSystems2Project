@@ -1,10 +1,10 @@
 package Globals;
 
-public class CriticalTuples {
+public class CriticalTuple {
     private String cateringFacilityHash;
     private TimeInterval timeInterval;
 
-    public CriticalTuples(String cateringFacilityHash, TimeInterval timeInterval) {
+    public CriticalTuple(String cateringFacilityHash, TimeInterval timeInterval) {
         this.cateringFacilityHash = cateringFacilityHash;
         this.timeInterval = timeInterval;
     }

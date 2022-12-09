@@ -57,6 +57,11 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         return "Invalid token";
     }
 
+    @Override
+    public void sendInformedToken(String token) throws RemoteException {
+        matchingService.receiveInformedToken(token);
+    }
+
     public void FlushCapsules() throws RemoteException {
         matchingService.receiveFlushedCapsules(receivedCapsules);
         receivedCapsules = new ArrayList<>();

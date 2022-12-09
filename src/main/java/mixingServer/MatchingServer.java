@@ -23,8 +23,8 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
     private List<Capsule> capsules;
 
-    private Map<String, List<String>> unInformedTokens;
-    private  List<CriticalTuples> criticalFacilities;
+    private List<String> unInformedTokens;
+    private  List<CriticalTuple> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
@@ -51,14 +51,11 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
             }
 
             validateLog(log, nyms.get(day));
-            if(unInformedTokens.containsKey(log.cfHash)){
-                unInformedTokens.get(log.cfHash).remove(log.userToken);
-            }
-
             appendCriticalTuples(log);
 
             // mark tokens that where at the facility at the critical time
             markTokensUninformed(log.cfHash, log.visitInterval);
+            unInformedTokens.remove(log.userToken);
         }
     }
 
@@ -70,8 +67,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     private void markTokensUninformed(String cateringFacilityHash, TimeInterval interval){
         for (Capsule capsule: capsules) {
             if (capsule.getCfHash().equals(cateringFacilityHash) && interval.hasOverlap(capsule.getInterval())){
-                unInformedTokens.putIfAbsent(cateringFacilityHash, new ArrayList<>());
-                unInformedTokens.get(cateringFacilityHash).add(capsule.getUserToken().getSignature());
+                unInformedTokens.add(capsule.getUserToken().getSignature());
             }
         }
     }
@@ -82,12 +78,12 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     }
 
     @Override
-    public List<CriticalTuples> getCriticalTuples() throws RemoteException {
-        return null;
+    public List<CriticalTuple> getCriticalTuples() throws RemoteException {
+        return criticalFacilities;
     }
 
     private void appendCriticalTuples(UserLog log){
-        criticalFacilities.add(new CriticalTuples(log.cfHash, log.visitInterval));
+        criticalFacilities.add(new CriticalTuple(log.cfHash, log.visitInterval));
     }
 
     private void validateLog(UserLog log, List<String> nyms) throws NoSuchAlgorithmException {

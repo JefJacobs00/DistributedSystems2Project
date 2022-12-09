@@ -9,4 +9,6 @@ import java.security.SignatureException;
 
 public interface IMixingServer extends Remote {
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException;
+
+    public void sendInformedToken(String token) throws RemoteException;
 }
