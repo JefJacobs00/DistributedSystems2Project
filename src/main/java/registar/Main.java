@@ -1,12 +1,12 @@
 package registar;
 
+import io.jsondb.JsonDBTemplate;
 import mixingServer.MatchingServer;
 import mixingServer.MatchingServerGUI;
 import mixingServer.MixingServer;
 import mixingServer.MixingServerGUI;
 import users.CentralHealthAuthority;
 
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.SecureRandom;
@@ -15,9 +15,26 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import javax.rmi.ssl.SslRMIServerSocketFactory;
 import javax.swing.*;
 
+
 public class Main {
 
     private void startServer() {
+
+        String dbFilesLocation = "src/main/java/JsonDB/registar.json";
+        String baseScanPackage = "registar";
+        JsonDBTemplate jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
+        jsonDBTemplate.createCollection(InstanceRegistar.class);
+        InstanceRegistar instanceRegistar = new InstanceRegistar();
+
+        instanceRegistar.setId("1");
+        instanceRegistar.setDtf(null);
+        instanceRegistar.setUsers(null);
+        instanceRegistar.setSecretKeys(null);
+        instanceRegistar.setFacilitySynonyms(null);
+        jsonDBTemplate.insert(instanceRegistar);
+
+
+
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
             registry.bind("Registar", new Registar());
