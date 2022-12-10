@@ -1,7 +1,12 @@
 package users;
 
 import Globals.QRValues;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import interfaceRMI.IRegistar;
+import io.jsondb.annotation.Document;
+import io.jsondb.annotation.Id;
 
 import javax.imageio.ImageIO;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
@@ -18,15 +23,17 @@ import java.util.Objects;
 
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
+@Document(collection = "CateringFacilities", schemaVersion= "1.0")
 public class CateringFacility implements java.io.Serializable {
+    @Id
     private String businessId;
     private String name;
     private String address;
     private String phoneNumber;
     private BufferedImage qrCode;
 
-    private final String hostName;
-    private final int port;
+    private String hostName;
+    private int port;
 
     private IRegistar registar;
 
@@ -39,6 +46,9 @@ public class CateringFacility implements java.io.Serializable {
         this.port = port;
     }
 
+    public CateringFacility(){}
+
+    @JsonIgnore
     public BufferedImage requestQrCode(){
         try {
             Registry myRegistry = LocateRegistry.getRegistry(this.hostName, this.port);
@@ -64,38 +74,47 @@ public class CateringFacility implements java.io.Serializable {
         return qr.convertToImage();
     }
 
+    @JsonGetter
     public String getBusinessId() {
         return businessId;
     }
 
+    @JsonSetter
     public void setBusinessId(String businessId) {
         this.businessId = businessId;
     }
 
+    @JsonGetter
     public String getName() {
         return name;
     }
 
+    @JsonSetter
     public void setName(String name) {
         this.name = name;
     }
 
+    @JsonGetter
     public String getAddress() {
         return address;
     }
 
+    @JsonSetter
     public void setAddress(String address) {
         this.address = address;
     }
 
+    @JsonGetter
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    @JsonSetter
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
+    @JsonIgnore
     public BufferedImage getQrCode() {
         return qrCode;
     }
