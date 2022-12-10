@@ -23,12 +23,14 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
     private List<Capsule> capsules;
 
-    private Map<String, List<String>> unInformedTokens;
-    private  List<CriticalTuples> criticalFacilities;
+    private List<String> uninformedTokens;
+    private  List<CriticalTuple> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         capsules = new ArrayList<>();
+        criticalFacilities = new ArrayList<>();
+        uninformedTokens = new ArrayList<>();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -51,14 +53,11 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
             }
 
             validateLog(log, nyms.get(day));
-            if(unInformedTokens.containsKey(log.cfHash)){
-                unInformedTokens.get(log.cfHash).remove(log.userToken);
-            }
-
             appendCriticalTuples(log);
 
             // mark tokens that where at the facility at the critical time
             markTokensUninformed(log.cfHash, log.visitInterval);
+            uninformedTokens.remove(log.userToken);
         }
     }
 
@@ -70,8 +69,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     private void markTokensUninformed(String cateringFacilityHash, TimeInterval interval){
         for (Capsule capsule: capsules) {
             if (capsule.getCfHash().equals(cateringFacilityHash) && interval.hasOverlap(capsule.getInterval())){
-                unInformedTokens.putIfAbsent(cateringFacilityHash, new ArrayList<>());
-                unInformedTokens.get(cateringFacilityHash).add(capsule.getUserToken().getSignature());
+                uninformedTokens.add(capsule.getUserToken().getSignature());
             }
         }
     }
@@ -81,8 +79,18 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         capsules.addAll(capsuleList);
     }
 
+    @Override
+    public void receiveInformedToken(String token) throws RemoteException {
+        uninformedTokens.remove(token);
+    }
+
+    @Override
+    public List<CriticalTuple> getCriticalTuples() throws RemoteException {
+        return criticalFacilities;
+    }
+
     private void appendCriticalTuples(UserLog log){
-        criticalFacilities.add(new CriticalTuples(log.cfHash, log.visitInterval));
+        criticalFacilities.add(new CriticalTuple(log.cfHash, log.visitInterval));
     }
 
     private void validateLog(UserLog log, List<String> nyms) throws NoSuchAlgorithmException {
@@ -112,5 +120,14 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         buffer.putLong(number);
 
         return buffer.array();
+    }
+
+
+    public List<Capsule> getCapsules() {
+        return capsules;
+    }
+
+    public List<String> getUninformedTokens() {
+        return uninformedTokens;
     }
 }

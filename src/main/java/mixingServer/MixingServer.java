@@ -5,8 +5,6 @@ import interfaceRMI.IMixingServer;
 import Globals.Capsule;
 import interfaceRMI.IRegistar;
 
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import java.io.InvalidObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -34,21 +32,24 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         keyPair = keyPairGenerator.generateKeyPair();
         signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(keyPair.getPrivate());
-
-
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
         spentTokens = new ArrayList<>();
+        this.receivedCapsules = new ArrayList<>();
+    }
+
+    public List<Capsule> getReceivedCapsules() {
+        return receivedCapsules;
     }
 
     @Override
     public String receiveCapsule(Capsule capsule) throws RemoteException, SignatureException, InvalidKeyException {
         capsule.getInterval().setStart(LocalDateTime.now());
-        receivedCapsules.add(capsule);
         boolean isTokenValid = registar.validateToken(capsule.getUserToken());
         boolean isSpend = spentTokens.contains(capsule.getUserToken().getSignature());
         if(isTokenValid && !isSpend){
+            receivedCapsules.add(capsule);
             spentTokens.add(capsule.getUserToken().getSignature());
             signature.update(capsule.getCfHash().getBytes());
             return toHexString(signature.sign());
@@ -56,7 +57,12 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
         return "Invalid token";
     }
 
-    public void FlushCapsules() throws RemoteException {
+    @Override
+    public void sendInformedToken(String token) throws RemoteException {
+        matchingService.receiveInformedToken(token);
+    }
+
+    public void flushCapsules() throws RemoteException {
         matchingService.receiveFlushedCapsules(receivedCapsules);
         receivedCapsules = new ArrayList<>();
         spentTokens = new ArrayList<>();

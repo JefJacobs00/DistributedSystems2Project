@@ -2,6 +2,7 @@ package Globals;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -34,4 +35,9 @@ public class TimeInterval implements java.io.Serializable {
         return !t2.getEnd().isBefore(this.getStart()) && !t2.getStart().isAfter(this.getEnd()); // overlap
     }
 
+    @Override
+    public String toString() {
+        DateTimeFormatter customFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");;
+        return start.format(customFormat) + "->" + end.format(customFormat);
+    }
 }

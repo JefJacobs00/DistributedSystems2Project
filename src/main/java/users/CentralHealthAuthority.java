@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,10 +30,11 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
     private Map<LocalDate, List<UserLog>> logs;
 
     private IMatchingService matchingServer;
-    public CentralHealthAuthority(String hostnameMatching, int portMatching ) throws NoSuchAlgorithmException, RemoteException, NotBoundException {
+    public CentralHealthAuthority() throws NoSuchAlgorithmException, RemoteException {
         signature = Signature.getInstance("SHA256withRSA");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
+        this.logs = new HashMap<>();
 
         //Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         //matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
@@ -76,7 +78,10 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
 
+    public Map<LocalDate, List<UserLog>> getUserLogs(){
+        return this.logs;
     }
 
     @Override

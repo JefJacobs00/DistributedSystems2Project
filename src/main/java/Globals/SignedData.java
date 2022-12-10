@@ -24,4 +24,21 @@ public class SignedData implements java.io.Serializable{
     public void setData(Object data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return signature.substring(0, 20) + "...";
+    }
+
+    public String toShortString() {
+        if(signature.length() > 20){
+            return signature.substring(0, 20) + "...";
+        } else {
+            return signature;
+        }
+    }
+
+    public String toLongString() {
+        return signature;
+    }
 }

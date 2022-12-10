@@ -1,16 +1,24 @@
 package Globals;
 
-public class CriticalTuples {
+public class CriticalTuple {
     private String cateringFacilityHash;
     private TimeInterval timeInterval;
 
-    public CriticalTuples(String cateringFacilityHash, TimeInterval timeInterval) {
+    public CriticalTuple(String cateringFacilityHash, TimeInterval timeInterval) {
         this.cateringFacilityHash = cateringFacilityHash;
         this.timeInterval = timeInterval;
     }
 
     public String getCateringFacilityHash() {
         return cateringFacilityHash;
+    }
+
+    public String getCateringFacilityHashShortString() {
+        if(cateringFacilityHash.length() > 20){
+            return cateringFacilityHash.substring(0, 20) + "...";
+        } else {
+            return cateringFacilityHash;
+        }
     }
 
     public void setCateringFacilityHash(String cateringFacilityHash) {

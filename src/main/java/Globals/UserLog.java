@@ -19,8 +19,24 @@ public class UserLog implements java.io.Serializable {
         return userToken;
     }
 
+    public String getUserTokenShortString() {
+        if(userToken.length() > 20){
+            return userToken.substring(0, 20) + "...";
+        } else {
+            return userToken;
+        }
+    }
+
     public String getCfHash() {
         return cfHash;
+    }
+
+    public String getCfHashShortString() {
+        if(cfHash.length() > 20){
+            return cfHash.substring(0, 20) + "...";
+        } else {
+            return cfHash;
+        }
     }
 
     public long getHashRandomNumber() {

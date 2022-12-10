@@ -1,7 +1,7 @@
 package users;
 
 import com.google.zxing.NotFoundException;
-import org.apache.commons.io.FilenameUtils;
+import org.bouncycastle.util.encoders.Hex;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -10,7 +10,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -21,10 +20,6 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +62,8 @@ public class UserGUI extends JFrame {
 
     private User user;
 
+    private boolean isCritical;
+
     private boolean isAuthenticated;
 
     public UserGUI(String title) throws ParseException {
@@ -92,15 +89,17 @@ public class UserGUI extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 Component selectedComponent = mainPanel.getSelectedComponent();
                 if ((registrationParentPanel).equals(selectedComponent)) {
+                    initQrCodeForm();
+                    initLogSendForm();
                     user = null;
+                    initQrCodeForm();
+                    initLogSendForm();
                     mainPanel.remove(2);
                     mainPanel.remove(1);
                     mainPanel.setSize(new Dimension(900, 200));
                 } else if (mainPanel.getSelectedIndex() == 1) {
-                    initQrCodeForm();
                     mainPanel.setSize(new Dimension(900, 500));
                 } else if (mainPanel.getSelectedIndex() == 2) {
-//                    initLogSendForm();
                     mainPanel.setSize(new Dimension(900, 260));
                 }
             }
@@ -210,6 +209,7 @@ public class UserGUI extends JFrame {
         readQrPanel.add(leaveFacilityButton, BorderLayout.PAGE_END);
         leaveFacilityButton.setVisible(false);
         openQrButton.setVisible(true);
+        qrImage.setOpaque(true);
         openQrButton.addActionListener(this::openQrButtonClicked);
         leaveFacilityButton.addActionListener(this::leaveFacilityButtonClicked);
     }
@@ -217,8 +217,9 @@ public class UserGUI extends JFrame {
     private void leaveFacility(){
         qrBufferedImage = null;
         qrImage.setIcon(null);
+        qrImage.setOpaque(false);
+        confirmationLabel.setText("");
         user.leaveFacility();
-        mainPanel.setSelectedIndex(0);
     }
 
     private void readQrCode() throws IOException, NotFoundException, SignatureException, InvalidKeyException {
@@ -229,14 +230,22 @@ public class UserGUI extends JFrame {
         if ( returnVal == JFileChooser.APPROVE_OPTION ){
             File file = fileChooser.getSelectedFile();
             qrBufferedImage = ImageIO.read(file);
-            qrImage.setIcon(new ImageIcon(qrBufferedImage));
+            //qrImage.setIcon(new ImageIcon(qrBufferedImage));
             String confirmationText = user.visitFacility(qrBufferedImage);
             if(!confirmationText.equals("Invalid token")){
+                byte[] confirmation = Hex.decode(confirmationText);
+                //qrImage.setIcon(new ImageIcon(qrBufferedImage));
+                qrImage.setOpaque(true);
+                qrImage.setBackground(new Color(confirmation[0] & 0xff,confirmation[1]& 0xff,confirmation[2] & 0xff));
                 confirmationText = confirmationText.substring(confirmationText.length()-4);
                 leaveFacilityButton.setVisible(true);
+            }else{
+                qrImage.setOpaque(false);
             }
             confirmationLabel.setText(confirmationText);
+
         }
+        readQrPanel.repaint();
     }
 
     private void openQrButtonClicked(java.awt.event.ActionEvent evt){
@@ -296,6 +305,7 @@ public class UserGUI extends JFrame {
         } else {
             try {
                 user = new User(phoneNumber);
+
                 this.isAuthenticated = true;
                 mainPanel.add("QR Code Generator", readQrParentPanel);
                 mainPanel.add("Log informatie", logSendParentPanel);
@@ -303,6 +313,11 @@ public class UserGUI extends JFrame {
             } catch (RuntimeException ex){
                 JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
                 ex.printStackTrace();
+            }
+            try {
+                this.isCritical = user.checkInfected();
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
             }
         }
     }
