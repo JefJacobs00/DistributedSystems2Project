@@ -217,6 +217,7 @@ public class UserGUI extends JFrame {
     private void leaveFacility(){
         qrBufferedImage = null;
         qrImage.setIcon(null);
+        qrImage.setOpaque(false);
         confirmationLabel.setText("");
         user.leaveFacility();
     }
