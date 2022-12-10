@@ -7,15 +7,11 @@ S
 ,src/main/java/users/CateringFacilityGUI.form,c\d\cda60051db4ea6aa85cb36c89f076c897b56c6a3
 W
 'src/main/java/Globals/TimeInterval.java,f\b\fbbc3aae3d944ddc5439823c9a654e728d6c16b3
-R
-"src/main/java/Globals/UserLog.java,7\4\7417e3197a099700d45732f51912faa8c41abdb3
 X
 (src/main/java/Globals/CriticalTuple.java,5\8\58121fd042f7379bbfb6d657d580932c669edd30
 ]
 -src/main/java/interfaceRMI/IMixingServer.java,8\6\865812747898232c32fe69487f116270d225bfdd
 `
 0src/main/java/interfaceRMI/IMatchingService.java,2\0\206d252fe2cf3194985cdfd8a282409c1ec038f3
-U
-%src/main/java/Globals/SignedData.java,6\9\69ea109f6423919f532bc48405fe7ba5afec75ee
 R
 "src/main/java/Globals/Capsule.java,2\9\2953cdce197dd2c00f4f4f504c5d6cd77be2cc1e

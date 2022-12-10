@@ -1,0 +1,37 @@
+
+F
+java:S3740ö"/Provide the parametrized type for this generic.(ÑúÛÙ
+F
+java:S3740ö"/Provide the parametrized type for this generic.(ÑúÛÙ
+g
+java:S1192i"KDefine a constant instead of duplicating this literal "businessId" 5 times.(Çé:8è´ŒòÎ0
+J
+java:S1604J"(Make this anonymous inner class a lambda(ò÷“«şÿÿÿÿ8é´ŒòÎ0
+m
+java:S1301N"KReplace this "switch" statement by "if" statements to increase readability.(üîÌéşÿÿÿÿ8é´ŒòÎ0
+~
+java:S1450#"\Remove the "addressJPanel" field and declare it as a local variable in the relevant methods.(óß”üÿÿÿÿ8ˆµŒòÎ0
+w
+java:S1450,"ZRemove the "genQrFields" field and declare it as a local variable in the relevant methods.(ßÛšÙ8ˆµŒòÎ0
+
+java:S14503"_Remove the "generateQrButton" field and declare it as a local variable in the relevant methods.(òı‰¥ÿÿÿÿÿ8‰µŒòÎ0
+†
+java:S1450"dRemove the "generateQrParentPanel" field and declare it as a local variable in the relevant methods.(ôÃ ûÿÿÿÿ8‰µŒòÎ0
+z
+java:S1450%"XRemove the "regJPanel" field and declare it as a local variable in the relevant methods.(Öõ¶¾øÿÿÿÿ8‰µŒòÎ0
+|
+java:S1450"`Remove the "registrationPanel" field and declare it as a local variable in the relevant methods.(¼ŸN8‰µŒòÎ0
+„
+java:S1450-"gRemove the "submitRegistrationButton" field and declare it as a local variable in the relevant methods.(åÌå«8‰µŒòÎ0
+N
+java:S19481"1Make "qrBufferedImage" transient or serializable.( ÏÑì8ŠµŒòÎ0
+e
+java:S3252;"IUse static access with "javax.swing.WindowConstants" for "EXIT_ON_CLOSE".(ºÀœx8µŒòÎ0
+C	java:S131N""Add a default case to this switch.(üîÌéşÿÿÿÿ8‘µŒòÎ0
+R	java:S125Ä"<This block of commented-out lines of code should be removed.(í›‰è
+N
+java:S1135Á"2Complete the task associated to this TODO comment.(¿ñõ‹ûÿÿÿÿ
+I
+java:S1135Ã"2Complete the task associated to this TODO comment.(ãŒ¶
+j
+java:S5843À"TSimplify this regular expression to reduce its complexity from 71 to the 20 allowed.(Şôñf

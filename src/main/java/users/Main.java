@@ -12,8 +12,10 @@ public class Main {
         String baseScanPackage = "users";
         JsonDBTemplate jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
 
-        jsonDBTemplate.createCollection(User.class);
-        jsonDBTemplate.createCollection(CateringFacility.class);
+        if (!jsonDBTemplate.collectionExists(User.class))
+            jsonDBTemplate.createCollection(User.class);
+        if (!jsonDBTemplate.collectionExists(CateringFacility.class))
+            jsonDBTemplate.createCollection(CateringFacility.class);
 
 
 
@@ -22,10 +24,10 @@ public class Main {
         CateringFacility cf = new CateringFacility("id1", "cf","somewhere", "0495366639" ,"localhost" , 1099 );
         BufferedImage qr = cf.requestQrCode();
         User user = new User("0495366618");
-        user.setPassword("ABC123");
 
-        jsonDBTemplate.insert(cf);
-        jsonDBTemplate.insert(user);
+
+        jsonDBTemplate.upsert(cf);
+        jsonDBTemplate.upsert(user);
         try {
             String result = user.visitFacility(qr);
             System.out.println(result);
