@@ -11,12 +11,18 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +46,7 @@ public class DoctorGUI extends JFrame {
 
     private JButton transmitLogsButton;
 
-    private java.util.List<UserLog> userLogs;
+    private JLabel transmitLogsFeedbackLabel;
 
     private DefaultTableModel logsTableModel;
 
@@ -68,10 +74,9 @@ public class DoctorGUI extends JFrame {
             logsTableModel.addColumn("Hash random number");
             logsTableModel.addColumn("Visit interval");
 
-
             refreshRows();
-            this.receiveLogsButton = new JButton("Ontvang Logs");
-            this.transmitLogsButton = new JButton("Stuur logs door");
+            this.receiveLogsButton = new JButton("Receive Logs");
+            this.transmitLogsButton = new JButton("Send logs");
 
             Border margin = new EmptyBorder(10,10,10,10);
             logsTable.addMouseListener(new MouseAdapter() {
@@ -82,13 +87,13 @@ public class DoctorGUI extends JFrame {
                         int col = logsTable.getSelectedColumn();
                         String value = "";
                         if(col == 0){
-                            value = userLogs.get(row).getUserToken();
+                            value = healthAuthority.getUserLogsList().get(row).getUserToken();
                         } else if (col == 1){
-                            value = userLogs.get(row).getCfHash();
+                            value = healthAuthority.getUserLogsList().get(row).getCfHash();
                         } else if (col == 2){
-                            value = String.valueOf(userLogs.get(row).getHashRandomNumber());
+                            value = String.valueOf(healthAuthority.getUserLogsList().get(row).getHashRandomNumber());
                         } else if (col == 3){
-                            value = userLogs.get(row).getVisitInterval().toString();
+                            value = healthAuthority.getUserLogsList().get(row).getVisitInterval().toString();
                         }
                         JTextArea ta = new JTextArea(value,20,40);
                         ta.setEditable(false);
@@ -131,8 +136,12 @@ public class DoctorGUI extends JFrame {
             receiveLogsButton.addActionListener(this::receiveLogsButtonClicked);
             transmitLogsButton.addActionListener(this::transmitLogsButtonClicked);
 
+            transmitLogsFeedbackLabel = new JLabel();
 
             bottomPanel.add(transmitLogsButton);
+            bottomPanel.add(transmitLogsFeedbackLabel);
+
+            bottomPanel.setBorder(margin);
 
             mainPanel.add(titleLabel, BorderLayout.PAGE_START);
             mainPanel.add(centerPanel, BorderLayout.CENTER);
@@ -146,8 +155,6 @@ public class DoctorGUI extends JFrame {
                 @Override
                 public void run() {
                     while (true){
-                        System.out.println("Update logs");
-
                         refreshRows();
                         try {
                             Thread.sleep(5000);
@@ -163,21 +170,19 @@ public class DoctorGUI extends JFrame {
     }
 
     private void refreshRows(){
-        System.out.println(healthAuthority.getUserLogs().size());
         logsTableModel.setRowCount(0);
-        for(String[] s : getUserLogsData(healthAuthority.getUserLogs())){
+        for(String[] s : getUserLogsData(healthAuthority.getUserLogsList())){
             logsTableModel.addRow(s);
         }
     }
 
-    private String[][] getUserLogsData(Map<LocalDate, List<UserLog>> userLogs){
-        List<UserLog> logs = new ArrayList(userLogs.values());
-        String[][] data = new String[userLogs.size()][3];
-        for (int i = 0; i < logs.size(); i++){
-            data[i][0] = logs.get(i).getUserTokenShortString();
-            data[i][1] = logs.get(i).getCfHashShortString();
-            data[i][2] = String.valueOf(logs.get(i).getHashRandomNumber());
-            data[i][3] = logs.get(i).getVisitInterval().toString();
+    private String[][] getUserLogsData(List<UserLog> userLogs){
+        String[][] data = new String[userLogs.size()][4];
+        for (int i = 0; i < userLogs.size(); i++){
+            data[i][0] = userLogs.get(i).getUserTokenShortString();
+            data[i][1] = userLogs.get(i).getCfHashShortString();
+            data[i][2] = String.valueOf(userLogs.get(i).getHashRandomNumber());
+            data[i][3] = userLogs.get(i).getVisitInterval().toString();
         }
         return data;
     }
@@ -185,21 +190,37 @@ public class DoctorGUI extends JFrame {
     private void receiveLogsButtonClicked(java.awt.event.ActionEvent evt) {
         try {
             String connectionNr = healthAuthority.start();
-            connectionNrLabel.setText("<html>" + "Connectienummer: " + "<B>" + connectionNr + "</B>" + "</html>");
+            connectionNrLabel.setText("<html>" + "Connection Nr: " + "<B>" + connectionNr + "</B>" + "</html>");
         } catch(AlreadyBoundException | RemoteException ex){
-            connectionNrLabel.setText("Er is iets foutgelopen bij de server.");
+            connectionNrLabel.setText("Server error: something went wrong");
             connectionNrLabel.setForeground(Color.RED);
             ex.printStackTrace();
+            Timer timer = new Timer(3000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    // Clear text or whatever you want
+                    connectionNrLabel.setText("");
+                }
+            });
+            timer.start();
         }
     }
 
     private void transmitLogsButtonClicked(java.awt.event.ActionEvent evt) {
-        healthAuthority.sendLogs();
+        try {
+            healthAuthority.sendLogs();
+            transmitLogsFeedbackLabel.setText("The logs have been sent successfully");
+            transmitLogsFeedbackLabel.setForeground(Color.GREEN);
+        } catch (IOException | SignatureException | NoSuchAlgorithmException | InvalidKeyException ex){
+            transmitLogsFeedbackLabel.setText("The logs could not be sent");
+            transmitLogsFeedbackLabel.setForeground(Color.RED);
+            ex.printStackTrace();
+        }
     }
 
 
     public static void main(String[] args) throws ParseException {
-        JFrame frame = new DoctorGUI("Doctor GUI");
+        JFrame frame = new DoctorGUI("Central Health Authority");
         frame.setVisible(true);
     }
 }

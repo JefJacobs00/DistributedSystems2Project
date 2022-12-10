@@ -30,14 +30,13 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
     private Map<LocalDate, List<UserLog>> logs;
 
     private IMatchingService matchingServer;
-    public CentralHealthAuthority() throws NoSuchAlgorithmException, RemoteException {
+    public CentralHealthAuthority() throws NoSuchAlgorithmException, RemoteException, NotBoundException {
         signature = Signature.getInstance("SHA256withRSA");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
         this.logs = new HashMap<>();
-
-        //Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
-        //matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
     }
 
     public String start() throws RemoteException, AlreadyBoundException {
@@ -65,23 +64,27 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
         matchingServer.receiveInfectedUserLogs(data);
     }
 
-    public void sendLogs(){
+    public void sendLogs() throws IOException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         if (logs.isEmpty())
             return;
         List<UserLog> userLogs = new ArrayList<>();
         for (LocalDate key: logs.keySet()) {
             userLogs.addAll(logs.get(key));
         }
-
-        try {
-            sendUserLogsToMatchingServer(userLogs);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        sendUserLogsToMatchingServer(userLogs);
+        logs.clear();
     }
 
     public Map<LocalDate, List<UserLog>> getUserLogs(){
         return this.logs;
+    }
+
+    public List<UserLog> getUserLogsList(){
+        List<UserLog> userLogList = new ArrayList<>();
+        for (List<UserLog> userLogsDay : logs.values()){
+            userLogList.addAll(userLogsDay);
+        }
+        return userLogList;
     }
 
     @Override

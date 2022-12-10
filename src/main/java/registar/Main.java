@@ -33,11 +33,10 @@ public class Main {
         instanceRegistar.setFacilitySynonyms(null);
         jsonDBTemplate.insert(instanceRegistar);
 
-
-
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
-            registry.bind("Registar", new Registar());
+            JFrame registarFrame = new RegistarGUI("Registar");
+            registarFrame.setVisible(true);
             JFrame matchingServerFrame = new MatchingServerGUI("Matching Server");
             matchingServerFrame.setVisible(true);
             JFrame mixingServerFrame = new MixingServerGUI("Mixing Server");

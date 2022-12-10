@@ -99,7 +99,7 @@ public class CateringFacilityGUI extends JFrame{
 
         Border margin = new EmptyBorder(10,10,10,10);
 
-        JLabel businessIdLabel = new JLabel("Bedrijfs-ID");
+        JLabel businessIdLabel = new JLabel("Business ID");
         JTextField businessIdTextField = new JTextField();
 
         genQrFields.put("businessId", businessIdTextField);
@@ -108,7 +108,7 @@ public class CateringFacilityGUI extends JFrame{
 
         qrImage = new JLabel();
 
-        saveQrButton = new JButton("QR code opslaan");
+        saveQrButton = new JButton("Save QR Code");
         clearQrButton = new JButton("Clear QR");
 
         generateQrButton = new JButton("Generate");
@@ -153,7 +153,7 @@ public class CateringFacilityGUI extends JFrame{
             clearQrButton.setVisible(true);
         } catch (RuntimeException ex){
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+            JOptionPane.showMessageDialog(this, "Server error: something went wrong");
         }
     }
 
@@ -193,7 +193,7 @@ public class CateringFacilityGUI extends JFrame{
     private void generateQrButtonClicked(java.awt.event.ActionEvent evt){
         String businessId = regJPanelFields.get("businessId").getText();
         if(businessId.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig bedrijf ID op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid Business ID");
         } else {
             // TODO - Find catering facility between all registered ones
             // cateringFacilities.find(o -> o.businessId = businessId)
@@ -212,7 +212,7 @@ public class CateringFacilityGUI extends JFrame{
         addrJPanelFields = new HashMap<>();
 
         submitRegistrationButton = new JButton("Submit");
-        submitRegistrationButton.setMargin(new Insets(10, 10, 10, 10));
+        submitRegistrationButton.setBorder(margin);
 
         registrationParentPanel.setLayout(new BorderLayout());
 
@@ -228,21 +228,21 @@ public class CateringFacilityGUI extends JFrame{
         registrationPanel.setBorder(margin);
 
         addressJPanel = new JPanel();
-        addressJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Adresinformatie"), margin));
+        addressJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Address Information"), margin));
         addressJPanel.setLayout(new GridLayout(4, 2, 10, 10));
         regJPanel = new JPanel();
-        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Algemene Informatie"), margin));
+        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("General Information"), margin));
         regJPanel.setLayout(new GridLayout(4, 2, 10, 10));
 
         submitRegistrationButton.addActionListener(this::submitRegistrationButtonClicked);
 
-        JLabel businessIdLabel = new JLabel("Bedrijfs-ID");
-        JLabel nameLabel = new JLabel("Naam");
-        JLabel addrLabel = new JLabel("Adres (straat & huisnummer)");
-        JLabel cityLabel = new JLabel("Gemeente");
-        JLabel countryLabel = new JLabel("Land");
-        JLabel zipLabel = new JLabel("ZIP/Postcode");
-        JLabel phoneNumberLabel = new JLabel("Telefoonnummer");
+        JLabel businessIdLabel = new JLabel("Business ID");
+        JLabel nameLabel = new JLabel("Name");
+        JLabel addrLabel = new JLabel("Address (street + nr)");
+        JLabel cityLabel = new JLabel("City");
+        JLabel countryLabel = new JLabel("Country");
+        JLabel zipLabel = new JLabel("ZIP/Postal Code");
+        JLabel phoneNumberLabel = new JLabel("Phone Number");
 
         JTextField businessIdTextField = new JTextField("");
         JTextField nameTextField = new JTextField("");
@@ -295,22 +295,22 @@ public class CateringFacilityGUI extends JFrame{
         String country = ((JComboBox)addrJPanelFields.get("country")).getSelectedItem().toString();
         String zipCode = ((JTextField)addrJPanelFields.get("zip")).getText();
         if(businessId.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig bedrijf ID op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid Business ID");
         } else if(name.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldige naam op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid Name");
         } else if(phoneNumber.equals("")
                 || !verifyPhoneNumber(phoneNumber)){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig telefoonnummer op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid Phone Number");
         } else if(address.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig adres op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid Address");
         } else if(city.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldige gemeente op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid City");
         } else if(!Arrays.toString(getAllCountries())
                 .contains(country)){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig land te selecteren");
+            JOptionPane.showMessageDialog(this, "Please select a valid Country");
         } else if(zipCode.equals("")
                 || !verifyStringNumber(zipCode)){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldige postcode op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid ZIP code");
         } else {
             try {
                 String fullAddressString = String.format("%s, %s %s, %s", address, zipCode, city, country);
@@ -319,7 +319,7 @@ public class CateringFacilityGUI extends JFrame{
                 genQrFields.get("businessId").setText(cateringFacility.getBusinessId());
                 generateQr(cateringFacility);
             } catch (RuntimeException ex){
-                JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+                JOptionPane.showMessageDialog(this, "Server error: something went wrong");
                 ex.printStackTrace();
             }
         }
