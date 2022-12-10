@@ -15,20 +15,6 @@ public class Main {
 
 
     private void startServer() {
-
-        String dbFilesLocation = "src/main/java/JsonDB/registar.json";
-        String baseScanPackage = "registar";
-        JsonDBTemplate jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
-        jsonDBTemplate.createCollection(InstanceRegistar.class);
-        InstanceRegistar instanceRegistar = new InstanceRegistar();
-
-        instanceRegistar.setId("1");
-        instanceRegistar.setDtf(null);
-        instanceRegistar.setUsers(null);
-        instanceRegistar.setSecretKeys(null);
-        instanceRegistar.setFacilitySynonyms(null);
-        jsonDBTemplate.insert(instanceRegistar);
-
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
             JFrame registarFrame = new RegistarGUI("Registar");

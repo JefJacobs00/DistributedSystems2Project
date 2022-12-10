@@ -15,6 +15,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.text.ParseException;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -124,7 +126,7 @@ public class MatchingServerGUI extends JFrame{
                         int row = uninformedTokensTable.getSelectedRow();
                         int col = uninformedTokensTable.getSelectedColumn();
                         String value = "";
-                        value = matchingServer.getUninformedTokens().get(row);
+                        value = matchingServer.getUninformedTokens().iterator().next();
                         JTextArea ta = new JTextArea(value,20,40);
                         ta.setEditable(false);
                         ta.setLineWrap(true);
@@ -217,10 +219,11 @@ public class MatchingServerGUI extends JFrame{
         return data;
     }
 
-    private String[][] getUninformedTokensData(java.util.List<String> uninformedTokens){
+    private String[][] getUninformedTokensData(HashSet<String> uninformedTokens){
         String[][] data = new String[uninformedTokens.size()][1];
+        Iterator<String> tokens = uninformedTokens.iterator();
         for (int i = 0; i < uninformedTokens.size(); i++){
-            String uninformedToken = uninformedTokens.get(i);
+            String uninformedToken = tokens.next();
             if(uninformedToken.length() > 20){
                 uninformedToken = uninformedToken.substring(0, 20) + "...";
             }

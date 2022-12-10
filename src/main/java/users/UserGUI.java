@@ -164,7 +164,7 @@ public class UserGUI extends JFrame {
         JLabel statusLabel = new JLabel();
         statusLabel.setBorder(margin);
         try {
-            statusLabel.setText("User Status: " + user.getUserStatus());
+            statusLabel.setText("User Status: " + user.getLogs());
             if(user.getUserStatus().equals("Healthy")){
                 statusLabel.setForeground(Color.GREEN);
             } else if (user.getUserStatus().equals("Infected")){
@@ -188,13 +188,13 @@ public class UserGUI extends JFrame {
                     int col = logsTable.getSelectedColumn();
                     String value = "";
                     if(col == 0){
-                        value = user.getUserLogsList().get(row).getUserToken();
+                        value = user.getLogs().get(row).getUserToken();
                     } else if (col == 1){
-                        value = user.getUserLogsList().get(row).getCfHash();
+                        value = user.getLogs().get(row).getCfHash();
                     } else if (col == 2){
-                        value = String.valueOf(user.getUserLogsList().get(row).getHashRandomNumber());
+                        value = String.valueOf(user.getLogs().get(row).getHashRandomNumber());
                     } else if (col == 3){
-                        value = user.getUserLogsList().get(row).getVisitInterval().toString();
+                        value = user.getLogs().get(row).getVisitInterval().toString();
                     }
                     JTextArea ta = new JTextArea(value,20,40);
                     ta.setEditable(false);
@@ -332,7 +332,7 @@ public class UserGUI extends JFrame {
 
     private void refreshRows(){
         logsTableModel.setRowCount(0);
-        for(String[] s : getUserLogsData(user.getUserLogsList())){
+        for(String[] s : getUserLogsData(user.getLogs())){
             logsTableModel.addRow(s);
         }
     }
@@ -369,6 +369,7 @@ public class UserGUI extends JFrame {
             //qrImage.setIcon(new ImageIcon(qrBufferedImage));
             String confirmationText = user.visitFacility(qrBufferedImage);
             if(!confirmationText.equals("Invalid token")){
+                openQrButton.setVisible(false);
                 byte[] confirmation = Hex.decode(confirmationText);
                 //qrImage.setIcon(new ImageIcon(qrBufferedImage));
                 qrImage.setOpaque(true);
@@ -394,6 +395,7 @@ public class UserGUI extends JFrame {
 
     private void leaveFacilityButtonClicked(java.awt.event.ActionEvent evt){
         leaveFacility();
+        openQrButton.setVisible(true);
     }
 
     private void initRegistrationForm(){

@@ -23,14 +23,14 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
 
     private List<Capsule> capsules;
 
-    private List<String> uninformedTokens;
+    private HashSet<String> uninformedTokens;
     private  List<CriticalTuple> criticalFacilities;
     public MatchingServer() throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         registar = (IRegistar) myRegistry.lookup("Registar");
         capsules = new ArrayList<>();
         criticalFacilities = new ArrayList<>();
-        uninformedTokens = new ArrayList<>();
+        uninformedTokens = new HashSet<>();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -77,6 +77,12 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     @Override
     public void receiveFlushedCapsules(List<Capsule> capsuleList) throws RemoteException {
         capsules.addAll(capsuleList);
+
+
+        for (CriticalTuple criticalTuple: criticalFacilities) {
+            markTokensUninformed(criticalTuple.getCateringFacilityHash(), criticalTuple.getTimeInterval());
+        }
+
     }
 
     @Override
@@ -127,7 +133,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         return capsules;
     }
 
-    public List<String> getUninformedTokens() {
+    public HashSet<String> getUninformedTokens() {
         return uninformedTokens;
     }
 }

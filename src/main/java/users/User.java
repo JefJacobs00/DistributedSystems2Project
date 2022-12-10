@@ -34,25 +34,24 @@ import java.util.Map;
 
 import static org.bouncycastle.util.encoders.Hex.toHexString;
 
-@Document(collection = "users", schemaVersion= "1.0")
 public class User {
 
-    @Id
     private String phoneNumber;
-
-    private String password;
     private SignedData[] tokens;
 
     private IRegistar registar;
     private IMixingServer mixingServer;
     private IMatchingService matchingService;
     private UserLog currentLog;
-    private Map<LocalDate, List<UserLog>> logs;
+    private List<UserLog> logs;
+
+    private int tokenIndex;
 
     public User(String phoneNumber){
         this.phoneNumber = phoneNumber;
+        tokenIndex = 0;
         this.start();
-        this.logs = new HashMap<>();
+        this.logs = new ArrayList<>();
     }
 
     public User(){}
@@ -69,7 +68,6 @@ public class User {
         }
     }
 
-    @JsonIgnore
     public QRValues readQRCodeFromFilePath(String filePath) throws IOException, NotFoundException {
         BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
                 new BufferedImageLuminanceSource(
@@ -80,13 +78,11 @@ public class User {
         return new QRValues(Long.decode(result[0]),result[1], result[2]);
     }
 
-    @JsonIgnore
     public String visitFacility(BufferedImage qrcode) throws NotFoundException, SignatureException, RemoteException, InvalidKeyException {
         QRValues qr = readQRImage(qrcode);
         return sendCapsule(createCapsule(qr));
     }
 
-    @JsonIgnore
     public boolean checkInfected() throws RemoteException {
         List<String> tokens = getInfectedTokens();
         for (String token : tokens) {
@@ -113,7 +109,7 @@ public class User {
 
     private String getTokenFromLogs(CriticalTuple tuple){
         LocalDate day = tuple.getTimeInterval().getStart().toLocalDate();
-        for (UserLog log: logs.get(day)) {
+        for (UserLog log: logs) {
             if (log.cfHash.equals(tuple.getCateringFacilityHash()) && log.visitInterval.hasOverlap(tuple.getTimeInterval()))
                 return log.userToken;
         }
@@ -123,25 +119,19 @@ public class User {
 
 
 
-    @JsonIgnore
     public void sendLogs(String chaIdentifier) throws RemoteException, NotBoundException {
         Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
         ICentralHealthAuthority cha = (ICentralHealthAuthority) myRegistry.lookup(chaIdentifier);
         cha.receiveUserLogs(logs);
     }
 
-    @JsonIgnore
     public void leaveFacility(){
         currentLog.endVisitInterval(LocalDateTime.now());
         //Add to logs
-        List logsToday = logs.get(LocalDate.now());
-        if(logsToday == null)
-            logs.put(LocalDate.now(), new ArrayList<>());
-        logs.get(LocalDate.now()).add(currentLog);
+        logs.add(currentLog);
         currentLog = null;
     }
 
-    @JsonIgnore
 
     public QRValues readQRImage(BufferedImage qrcode) throws NotFoundException {
         LuminanceSource source = new BufferedImageLuminanceSource(qrcode);
@@ -156,8 +146,9 @@ public class User {
     private Capsule createCapsule(QRValues qr){
         LocalDateTime time = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).minusMinutes(LocalDateTime.now().getMinute()%30);
         int index = (time.getHour()*60 + time.getMinute())/30;
-
+        index = tokenIndex;
         this.currentLog = new UserLog(tokens[index].getSignature(),qr.getHash(),qr.getRandomNumber(),getCurrentTimeInterval());
+        tokenIndex++;
         return new Capsule(getCurrentTimeInterval(),tokens[index],qr.getHash());
     }
 
@@ -174,23 +165,18 @@ public class User {
         return new TimeInterval(start, end);
     }
 
-    @JsonGetter
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    @JsonSetter
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    @JsonGetter
-    public String getPassword() {
-        return password;
+    public List<UserLog> getLogs() {
+        return logs;
     }
-
-    @JsonSetter
-    public void setPassword(String password) {
-        this.password = password;
+    public String getUserStatus() throws RemoteException {
+        return this.checkInfected() ? "Infected" : "Healthy";
     }
 }

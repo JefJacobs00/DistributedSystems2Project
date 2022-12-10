@@ -35,6 +35,8 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     private Signature signature;
     private KeyPair keyPairSign;
 
+    private Map<String, LocalDate> lastUserTokenUpdate;
+
     private SecretKeySpec keyAES;
 
     private DateTimeFormatter dtf;
@@ -46,6 +48,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
         signature = Signature.getInstance("SHA256withRSA");
+        lastUserTokenUpdate = new HashMap<>();
 
         users = new HashMap<String, SignedData[]>();
         secretKeys = new HashMap<>();
@@ -100,6 +103,15 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     public SignedData[] enrollUser(String phoneNumber) throws Exception{
 
         // Generate & return the tokens it can use.
+        if(lastUserTokenUpdate.containsKey(phoneNumber)){
+            if(lastUserTokenUpdate.get(phoneNumber).equals(LocalDate.now())){
+                return users.get(phoneNumber);
+            }
+            lastUserTokenUpdate.replace(phoneNumber, LocalDate.now());
+        }else{
+            lastUserTokenUpdate.put(phoneNumber, LocalDate.now());
+        }
+
         SignedData[] tokens = new SignedData[DAILYTOKENCOUNT];
         signature.initSign(keyPairSign.getPrivate());
         SecureRandom s = new SecureRandom();
