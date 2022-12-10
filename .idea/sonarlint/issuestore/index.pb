@@ -11,9 +11,19 @@ R
 "src/main/java/Globals/UserLog.java,7\4\7417e3197a099700d45732f51912faa8c41abdb3
 X
 (src/main/java/Globals/CriticalTuple.java,5\8\58121fd042f7379bbfb6d657d580932c669edd30
-]
--src/main/java/interfaceRMI/IMixingServer.java,8\6\865812747898232c32fe69487f116270d225bfdd
 U
 %src/main/java/Globals/SignedData.java,6\9\69ea109f6423919f532bc48405fe7ba5afec75ee
 R
 "src/main/java/Globals/Capsule.java,2\9\2953cdce197dd2c00f4f4f504c5d6cd77be2cc1e
+P
+ src/main/java/users/UserGUI.form,9\e\9e670fed8f426d45768e06ffab99139af0306657
+Y
+)src/main/java/users/CateringFacility.java,2\0\20cd9dcdc11f09b9af5fdbe9a63aeb139f28a6ff
+Y
+)src/main/java/interfaceRMI/IRegistar.java,f\0\f010e0bf5495332eb685aa90492a9fbc4cc775da
+R
+"src/main/java/users/DoctorGUI.java,e\3\e3d4201db5a4ecd1476e8f7d2b01b471ed8325f2
+_
+/src/main/java/users/CentralHealthAuthority.java,2\5\253a437354a1ed4e2f4aaa8e8c4dd97d2cbae516
+g
+7src/main/java/interfaceRMI/ICentralHealthAuthority.java,d\7\d7f16f0f4238d9172d4f344c75a6afcc8c9399e8

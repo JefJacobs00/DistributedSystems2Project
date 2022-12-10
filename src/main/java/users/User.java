@@ -1,9 +1,9 @@
 package users;
 
 import Globals.*;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
@@ -11,28 +11,22 @@ import interfaceRMI.ICentralHealthAuthority;
 import interfaceRMI.IMatchingService;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
-import io.jsondb.annotation.Document;
-import io.jsondb.annotation.Id;
-import io.jsondb.annotation.Secret;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 public class User {
 
@@ -52,6 +46,11 @@ public class User {
         tokenIndex = 0;
         this.start();
         this.logs = new ArrayList<>();
+
+        try {
+            this.logs = loadFromFile();
+        }catch (Exception e){}
+
     }
 
     public User(){}
@@ -92,6 +91,50 @@ public class User {
         return tokens.size() > 0;
     }
 
+    private void saveToFile(){
+        JsonArray logs = new JsonArray();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        for (UserLog userLog: this.logs) {
+            JsonObject jsonLog = new JsonObject();
+            jsonLog.addProperty("cfHash",userLog.cfHash);
+            jsonLog.addProperty("userToken",userLog.userToken);
+            jsonLog.addProperty("hashRandomNumber",userLog.hashRandomNumber);
+            jsonLog.addProperty("start", dtf.format(userLog.getVisitInterval().getStart()));
+            jsonLog.addProperty("end", dtf.format(userLog.getVisitInterval().getEnd()));
+
+            logs.add(jsonLog);
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("logs_"+phoneNumber+".json"));
+            writer.write(logs.toString());
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private List<UserLog> loadFromFile() throws IOException {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        JsonParser parser = new JsonParser();
+        JsonArray jsonArray = (JsonArray) parser.parse(new FileReader("logs_"+phoneNumber+".json"));
+
+        List<UserLog> userLogs = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject object = (JsonObject) jsonArray.get(i);
+
+            LocalDateTime start = LocalDateTime.parse(object.get("start").getAsString(), dtf);
+            LocalDateTime end = LocalDateTime.parse(object.get("end").getAsString(), dtf);
+            TimeInterval interval = new TimeInterval(start,end);
+
+            UserLog log = new UserLog(object.get("userToken").toString(),object.get("cfHash").toString(),object.get("hashRandomNumber").getAsLong(), interval);
+            userLogs.add(log);
+        }
+
+        return userLogs;
+    }
+
 
     private List<String> getInfectedTokens() throws RemoteException {
         List<CriticalTuple> criticalFacilities = matchingService.getCriticalTuples();
@@ -130,6 +173,7 @@ public class User {
         //Add to logs
         logs.add(currentLog);
         currentLog = null;
+        saveToFile();
     }
 
 
