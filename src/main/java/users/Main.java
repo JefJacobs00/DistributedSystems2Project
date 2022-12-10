@@ -12,29 +12,9 @@ public class Main {
         String baseScanPackage = "users";
         JsonDBTemplate jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
 
-        jsonDBTemplate.createCollection(InstanceUsers.class);
+        jsonDBTemplate.createCollection(User.class);
+        jsonDBTemplate.createCollection(CateringFacility.class);
 
-
-        InstanceUsers instanceUsers = new InstanceUsers();
-        instanceUsers.setId("1");
-        instanceUsers.setPhoneNumber("0123123123");
-        instanceUsers.setPassword("b87eb02f5dd7e5232d7b0fc30a5015e4");
-        jsonDBTemplate.insert(instanceUsers);
-
-        instanceUsers.setId("2");
-        instanceUsers.setPhoneNumber("045566677");
-        instanceUsers.setPassword("SDGeb02f5dd7sdsdfsd2424");
-        jsonDBTemplate.insert(instanceUsers);
-
-        String dbFilesLocationCF = "src/main/java/JsonDB/CFusers.json";
-        String baseScanPackageCF = "users";
-        JsonDBTemplate jsonDBTemplateCF = new JsonDBTemplate(dbFilesLocationCF, baseScanPackageCF);
-        //jsonDBTemplateCF.createCollection(InstanceCFUsers.class);
-
-        InstanceCFUsers instanceCFUsers = new InstanceCFUsers();
-        instanceCFUsers.setName("1");
-
-        jsonDBTemplateCF.insert(instanceCFUsers);
 
 
 
@@ -42,6 +22,10 @@ public class Main {
         CateringFacility cf = new CateringFacility("id1", "cf","somewhere", "0495366639" ,"localhost" , 1099 );
         BufferedImage qr = cf.requestQrCode();
         User user = new User("0495366618");
+        user.setPassword("ABC123");
+
+        jsonDBTemplate.insert(cf);
+        jsonDBTemplate.insert(user);
         try {
             String result = user.visitFacility(qr);
             System.out.println(result);

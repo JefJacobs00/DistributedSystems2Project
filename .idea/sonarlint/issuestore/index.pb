@@ -5,8 +5,6 @@ S
 ,src/main/java/users/CateringFacilityGUI.java,1\c\1c6c801924553853954bba8faef4b4e1ffd2b623
 \
 ,src/main/java/users/CateringFacilityGUI.form,c\d\cda60051db4ea6aa85cb36c89f076c897b56c6a3
-M
-src/main/java/users/Main.java,0\c\0c07dfcee765dfc24f03becdeb317c297131661c
 W
 'src/main/java/Globals/TimeInterval.java,f\b\fbbc3aae3d944ddc5439823c9a654e728d6c16b3
 R
@@ -21,5 +19,3 @@ U
 %src/main/java/Globals/SignedData.java,6\9\69ea109f6423919f532bc48405fe7ba5afec75ee
 R
 "src/main/java/Globals/Capsule.java,2\9\2953cdce197dd2c00f4f4f504c5d6cd77be2cc1e
-\
-,src/main/java/mixingServer/MixingServer.java,e\a\ea6ec82bbbd899be48e7f1322a2a7661368d9c6a
