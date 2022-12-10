@@ -40,18 +40,19 @@ public class User {
     @Id
     private String phoneNumber;
 
+    private String password;
     private SignedData[] tokens;
 
     private IRegistar registar;
     private IMixingServer mixingServer;
     private IMatchingService matchingService;
     private UserLog currentLog;
-    private List<UserLog> logs;
+    private Map<LocalDate, List<UserLog>> logs;
 
     public User(String phoneNumber){
         this.phoneNumber = phoneNumber;
         this.start();
-        this.logs = new ArrayList<>();
+        this.logs = new HashMap<>();
     }
 
     public User(){}
@@ -63,7 +64,6 @@ public class User {
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
             matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
             tokens = registar.enrollUser(this.phoneNumber);
-            this.logs = new ArrayList<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -113,8 +113,8 @@ public class User {
 
     private String getTokenFromLogs(CriticalTuple tuple){
         LocalDate day = tuple.getTimeInterval().getStart().toLocalDate();
-        for (UserLog log: logs) {
-            if (log.cfHash.equals(tuple.getCateringFacilityHash()) && log.visitInterval.hasOverlap(tuple.getTimeInterval()) && day.equals(log.visitInterval.getEnd().toLocalDate()))
+        for (UserLog log: logs.get(day)) {
+            if (log.cfHash.equals(tuple.getCateringFacilityHash()) && log.visitInterval.hasOverlap(tuple.getTimeInterval()))
                 return log.userToken;
         }
 
@@ -133,7 +133,11 @@ public class User {
     @JsonIgnore
     public void leaveFacility(){
         currentLog.endVisitInterval(LocalDateTime.now());
-        logs.add(currentLog);
+        //Add to logs
+        List logsToday = logs.get(LocalDate.now());
+        if(logsToday == null)
+            logs.put(LocalDate.now(), new ArrayList<>());
+        logs.get(LocalDate.now()).add(currentLog);
         currentLog = null;
     }
 
@@ -181,27 +185,12 @@ public class User {
     }
 
     @JsonGetter
-    public SignedData[] getTokens() {
-        return tokens;
+    public String getPassword() {
+        return password;
     }
 
     @JsonSetter
-    public void setTokens(SignedData[] tokens) {
-        this.tokens = tokens;
-    }
-
-    @JsonGetter
-    public List<UserLog> getLogs() {
-        return logs;
-    }
-
-    @JsonSetter
-    public void setLogs(List<UserLog> logs) {
-        this.logs = logs;
-    }
-
-    @JsonIgnore
-    public String getUserStatus() throws RemoteException {
-        return this.checkInfected() ? "Infected" : "Healthy";
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

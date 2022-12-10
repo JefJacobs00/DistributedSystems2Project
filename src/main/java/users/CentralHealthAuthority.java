@@ -27,17 +27,16 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
     private Signature signature;
     private KeyPair keyPairSign;
 
-    private List<UserLog> logs;
+    private Map<LocalDate, List<UserLog>> logs;
 
     private IMatchingService matchingServer;
-    public CentralHealthAuthority() throws NoSuchAlgorithmException, RemoteException {
+    public CentralHealthAuthority() throws NoSuchAlgorithmException, RemoteException, NotBoundException {
         signature = Signature.getInstance("SHA256withRSA");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
-        this.logs = new ArrayList<>();
-
-        //Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
-        //matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
+        this.logs = new HashMap<>();
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        matchingServer = (IMatchingService) myRegistry.lookup("MatchingServer");
     }
 
     public String start() throws RemoteException, AlreadyBoundException {
@@ -65,23 +64,31 @@ public class CentralHealthAuthority extends UnicastRemoteObject implements ICent
         matchingServer.receiveInfectedUserLogs(data);
     }
 
-    public void sendLogs(){
+    public void sendLogs() throws IOException, SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         if (logs.isEmpty())
             return;
-
-        try {
-            sendUserLogsToMatchingServer(logs);
-        }catch (Exception e){
-            e.printStackTrace();
+        List<UserLog> userLogs = new ArrayList<>();
+        for (LocalDate key: logs.keySet()) {
+            userLogs.addAll(logs.get(key));
         }
+        sendUserLogsToMatchingServer(userLogs);
+        logs.clear();
     }
 
-    public List<UserLog> getUserLogs(){
+    public Map<LocalDate, List<UserLog>> getUserLogs(){
         return this.logs;
     }
 
+    public List<UserLog> getUserLogsList(){
+        List<UserLog> userLogList = new ArrayList<>();
+        for (List<UserLog> userLogsDay : logs.values()){
+            userLogList.addAll(userLogsDay);
+        }
+        return userLogList;
+    }
+
     @Override
-    public void receiveUserLogs(List<UserLog> logs) throws RemoteException {
+    public void receiveUserLogs(Map<LocalDate, List<UserLog>> logs) throws RemoteException {
         this.logs = logs;
     }
 }
