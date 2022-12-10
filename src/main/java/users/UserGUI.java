@@ -1,5 +1,6 @@
 package users;
 
+import Globals.UserLog;
 import com.google.zxing.NotFoundException;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -11,7 +12,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +26,8 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.text.ParseException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +70,10 @@ public class UserGUI extends JFrame {
 
     private User user;
 
+    private JTable logsTable;
+
+    private DefaultTableModel logsTableModel;
+
     private boolean isCritical;
 
     private boolean isAuthenticated;
@@ -69,18 +81,17 @@ public class UserGUI extends JFrame {
     public UserGUI(String title) throws ParseException {
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(new Dimension(900, 600));
+        this.setSize(new Dimension(920, 700));
         this.setLocationRelativeTo(null);
         this.setLayout(null);
         this.setResizable(false);
         this.isAuthenticated = false;
         this.mainPanel = new JTabbedPane();
-        this.mainPanel.setBounds(0, 0, 900, 200);
+        this.mainPanel.setBounds(0, 0, 920, 175);
         initRegistrationForm();
         initQrCodeForm();
         initLogSendForm();
         mainPanel.add("User Registration", registrationParentPanel);
-//        mainPanel.add("QR Code Generator", readQrParentPanel);
 
         this.add(mainPanel);
 
@@ -92,15 +103,31 @@ public class UserGUI extends JFrame {
                     initQrCodeForm();
                     initLogSendForm();
                     user = null;
-                    initQrCodeForm();
-                    initLogSendForm();
                     mainPanel.remove(2);
                     mainPanel.remove(1);
-                    mainPanel.setSize(new Dimension(900, 200));
+                    mainPanel.setSize(new Dimension(920, 175));
                 } else if (mainPanel.getSelectedIndex() == 1) {
-                    mainPanel.setSize(new Dimension(900, 500));
+                    mainPanel.setSize(new Dimension(920, 500));
                 } else if (mainPanel.getSelectedIndex() == 2) {
-                    mainPanel.setSize(new Dimension(900, 260));
+                    mainPanel.setSize(new Dimension(920, 600));
+                }
+            }
+        });
+
+        ExecutorService executerService = Executors.newCachedThreadPool();
+
+        executerService.execute(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    if(user != null){
+                        refreshRows();
+                    }
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -112,7 +139,7 @@ public class UserGUI extends JFrame {
 
         Border margin = new EmptyBorder(10,10,10,10);
 
-        sendLogsButton = new JButton("Verstuur");
+        sendLogsButton = new JButton("Send");
         sendLogsButton.setMargin(new Insets(10, 10, 10, 10));
 
         logsFeedbackLabel = new JLabel();
@@ -120,25 +147,77 @@ public class UserGUI extends JFrame {
 
         logSendParentPanel.setLayout(new BorderLayout());
 
-        JLabel titleLabel = new JLabel("Verstuur gebruikerslogs");
+        logsTableModel = new DefaultTableModel();
+        this.logsTable = new JTable(logsTableModel);
+        logsTableModel.addColumn("User Token");
+        logsTableModel.addColumn("CF Hash");
+        logsTableModel.addColumn("Hash random number");
+        logsTableModel.addColumn("Visit interval");
+        if(user != null)
+            refreshRows();
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new GridLayout(2, 1, 10, 10));
+        JLabel titleLabel = new JLabel("User Log Information");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setBorder(margin);
 
-        logSendParentPanel.add(titleLabel, BorderLayout.PAGE_START);
-        logSendParentPanel.add(logSendPanel, BorderLayout.CENTER);
-        logSendParentPanel.add(logsFeedbackLabel, BorderLayout.PAGE_END);
+        JLabel statusLabel = new JLabel();
+        statusLabel.setBorder(margin);
+        try {
+            statusLabel.setText("User Status: " + user.getUserStatus());
+            if(user.getUserStatus().equals("Healthy")){
+                statusLabel.setForeground(Color.GREEN);
+            } else if (user.getUserStatus().equals("Infected")){
+                statusLabel.setForeground(Color.RED);
+            }
+        } catch (Exception ex){
+            statusLabel.setText("User Status could not be fetched from server");
+            statusLabel.setForeground(Color.RED);
+        }
 
-        logSendPanel.setLayout(new GridLayout(2, 2, 10, 10));
-        logSendPanel.setBorder(margin);
+        titlePanel.add(titleLabel);
+        titlePanel.add(statusLabel);
 
+        JPanel logsPanel = new JPanel();
+
+        logsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    int row = logsTable.getSelectedRow();
+                    int col = logsTable.getSelectedColumn();
+                    String value = "";
+                    if(col == 0){
+                        value = user.getUserLogsList().get(row).getUserToken();
+                    } else if (col == 1){
+                        value = user.getUserLogsList().get(row).getCfHash();
+                    } else if (col == 2){
+                        value = String.valueOf(user.getUserLogsList().get(row).getHashRandomNumber());
+                    } else if (col == 3){
+                        value = user.getUserLogsList().get(row).getVisitInterval().toString();
+                    }
+                    JTextArea ta = new JTextArea(value,20,40);
+                    ta.setEditable(false);
+                    ta.setLineWrap(true);
+                    JOptionPane.showMessageDialog(UserGUI.this, ta);
+                }
+            }
+        });
+
+        JScrollPane tableScroller = new JScrollPane(logsTable);
+
+        logsPanel.setLayout(new BorderLayout());
+
+        logSendPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        logSendPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Send User Logs"), margin));
 
         logJPanel = new JPanel();
-        logJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Gezondheidsorganisatie"), margin));
+        logJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Health Authority"), margin));
         logJPanel.setLayout(new GridLayout(1, 2, 10, 10));
 
         sendLogsButton.addActionListener(this::sendLogsButtonClicked);
 
-        JLabel healthAuthorityLabel = new JLabel("Gezondheidsorganisatie-ID");
+        JLabel healthAuthorityLabel = new JLabel("CHA connection number");
         healthAuthorityTextField = new JTextField("");
 
         logJPanel.add(healthAuthorityLabel);
@@ -146,6 +225,14 @@ public class UserGUI extends JFrame {
 
         logSendPanel.add(logJPanel);
         logSendPanel.add(sendLogsButton);
+
+        logsPanel.add(tableScroller, BorderLayout.CENTER);
+        logsPanel.add(logSendPanel, BorderLayout.PAGE_END);
+//        logSendPanel.setBorder(margin);
+
+        logSendParentPanel.add(titlePanel, BorderLayout.PAGE_START);
+        logSendParentPanel.add(logsPanel, BorderLayout.CENTER);
+        logSendParentPanel.add(logsFeedbackLabel, BorderLayout.PAGE_END);
     }
 
     private void sendLogsButtonClicked(java.awt.event.ActionEvent evt) {
@@ -167,6 +254,14 @@ public class UserGUI extends JFrame {
                 ex.printStackTrace();
             }
         }
+        Timer timer = new Timer(3000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Clear text or whatever you want
+                logsFeedbackLabel.setText("");
+            }
+        });
+        timer.start();
     }
 
     private void initQrCodeForm(){
@@ -192,13 +287,34 @@ public class UserGUI extends JFrame {
         qrPanel.add(qrImage);
         qrPanel.add(confirmationLabel);
 
+        qrPanel.setBorder(margin);
+
         readQrParentPanel.setLayout(new BorderLayout());
 
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new GridLayout(2, 1, 10, 10));
         JLabel titleLabel = new JLabel("QR Code Generator");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setBorder(margin);
 
-        readQrParentPanel.add(titleLabel, BorderLayout.PAGE_START);
+        JLabel statusLabel = new JLabel();
+        statusLabel.setBorder(margin);
+        try {
+            statusLabel.setText("User Status: " + user.getUserStatus());
+            if(user.getUserStatus().equals("Healthy")){
+                statusLabel.setForeground(Color.GREEN);
+            } else if (user.getUserStatus().equals("Infected")){
+                statusLabel.setForeground(Color.RED);
+            }
+        } catch (Exception ex){
+            statusLabel.setText("User Status could not be fetched from server");
+            statusLabel.setForeground(Color.RED);
+        }
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(statusLabel);
+
+        readQrParentPanel.add(titlePanel, BorderLayout.PAGE_START);
         readQrParentPanel.add(readQrPanel, BorderLayout.CENTER);
         generateFormPanel.add(openQrButton);
 
@@ -214,12 +330,32 @@ public class UserGUI extends JFrame {
         leaveFacilityButton.addActionListener(this::leaveFacilityButtonClicked);
     }
 
+    private void refreshRows(){
+        logsTableModel.setRowCount(0);
+        for(String[] s : getUserLogsData(user.getUserLogsList())){
+            logsTableModel.addRow(s);
+        }
+    }
+
+    private String[][] getUserLogsData(java.util.List<UserLog> userLogs){
+        String[][] data = new String[userLogs.size()][4];
+        for (int i = 0; i < userLogs.size(); i++){
+            data[i][0] = userLogs.get(i).getUserTokenShortString();
+            data[i][1] = userLogs.get(i).getCfHashShortString();
+            data[i][2] = String.valueOf(userLogs.get(i).getHashRandomNumber());
+            data[i][3] = userLogs.get(i).getVisitInterval().toString();
+        }
+        return data;
+    }
+
     private void leaveFacility(){
+        user.leaveFacility();
         qrBufferedImage = null;
         qrImage.setIcon(null);
         qrImage.setOpaque(false);
+        qrImage.setBackground(null);
         confirmationLabel.setText("");
-        user.leaveFacility();
+        leaveFacilityButton.setVisible(false);
     }
 
     private void readQrCode() throws IOException, NotFoundException, SignatureException, InvalidKeyException {
@@ -267,7 +403,6 @@ public class UserGUI extends JFrame {
         Border margin = new EmptyBorder(10,10,10,10);
 
         submitRegistrationButton = new JButton("Submit");
-        submitRegistrationButton.setMargin(new Insets(10, 10, 10, 10));
 
         registrationParentPanel.setLayout(new BorderLayout());
 
@@ -283,12 +418,12 @@ public class UserGUI extends JFrame {
         registrationPanel.setBorder(margin);
 
         regJPanel = new JPanel();
-        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Algemene Informatie"), margin));
+        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("General Information"), margin));
         regJPanel.setLayout(new GridLayout(1, 2, 10, 10));
 
         submitRegistrationButton.addActionListener(this::submitRegistrationButtonClicked);
 
-        JLabel phoneNumberLabel = new JLabel("Telefoonnummer");
+        JLabel phoneNumberLabel = new JLabel("Phone Number");
         phoneNumberTextField = new JTextField("");
 
         regJPanel.add(phoneNumberLabel);
@@ -301,23 +436,19 @@ public class UserGUI extends JFrame {
         String phoneNumber = phoneNumberTextField.getText();
         if(phoneNumber.equals("")
                 || !verifyPhoneNumber(phoneNumber)){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldig telefoonnummer op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid phone number");
         } else {
             try {
                 user = new User(phoneNumber);
-
+                initQrCodeForm();
+                initLogSendForm();
                 this.isAuthenticated = true;
                 mainPanel.add("QR Code Generator", readQrParentPanel);
                 mainPanel.add("Log informatie", logSendParentPanel);
                 mainPanel.setSelectedIndex(1);
             } catch (RuntimeException ex){
-                JOptionPane.showMessageDialog(this, "Er is iets foutgelopen bij de server");
+                JOptionPane.showMessageDialog(this, "Server error: something went wrong");
                 ex.printStackTrace();
-            }
-            try {
-                this.isCritical = user.checkInfected();
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
             }
         }
     }
@@ -333,7 +464,7 @@ public class UserGUI extends JFrame {
     }
 
     public static void main(String[] args) throws ParseException {
-        JFrame frame = new UserGUI("Gebruiker");
+        JFrame frame = new UserGUI("User");
         frame.setVisible(true);
     }
 }

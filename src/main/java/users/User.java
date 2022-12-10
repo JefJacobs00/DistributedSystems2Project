@@ -53,6 +53,7 @@ public class User {
             mixingServer = (IMixingServer) myRegistry.lookup("MixingServer");
             matchingService = (IMatchingService) myRegistry.lookup("MatchingServer");
             tokens = registar.enrollUser(this.phoneNumber);
+            this.logs = new HashMap<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -155,4 +156,15 @@ public class User {
         return new TimeInterval(start, end);
     }
 
+    public List<UserLog> getUserLogsList(){
+        List<UserLog> userLogList = new ArrayList<>();
+        for (List<UserLog> userLogsDay : logs.values()){
+            userLogList.addAll(userLogsDay);
+        }
+        return userLogList;
+    }
+
+    public String getUserStatus() throws RemoteException {
+        return this.checkInfected() ? "Infected" : "Healthy";
+    }
 }

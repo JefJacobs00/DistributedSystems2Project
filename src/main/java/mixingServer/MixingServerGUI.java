@@ -100,6 +100,7 @@ public class MixingServerGUI extends JFrame {
 
             bottomPanel.add(flushCapsulesButton);
             bottomPanel.add(flushFeedbackLabel);
+            bottomPanel.setBorder(margin);
 
             mainPanel.add(titleLabel, BorderLayout.PAGE_START);
             mainPanel.add(tableScroller, BorderLayout.CENTER);
@@ -113,7 +114,6 @@ public class MixingServerGUI extends JFrame {
                 @Override
                 public void run() {
                     while (true){
-                        System.out.println("Update mixingserver");
                         refreshRows();
                         try {
                             Thread.sleep(5000);

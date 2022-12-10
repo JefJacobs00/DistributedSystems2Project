@@ -164,7 +164,6 @@ public class MatchingServerGUI extends JFrame{
                 @Override
                 public void run() {
                     while (true){
-                        System.out.println("Update matchingserver");
                         refreshRows();
                         try {
                             Thread.sleep(5000);

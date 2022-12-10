@@ -27,12 +27,20 @@ public class SignedData implements java.io.Serializable{
 
     @Override
     public String toString() {
-        return signature.substring(0, 20) + "...";
+        return signature;
     }
 
     public String toShortString() {
         if(signature.length() > 20){
             return signature.substring(0, 20) + "...";
+        } else {
+            return signature;
+        }
+    }
+
+    public String toSpecialString() {
+        if(signature.length() > 20){
+            return signature.substring(0, 10) + "..." + signature.substring(signature.length()-10);
         } else {
             return signature;
         }

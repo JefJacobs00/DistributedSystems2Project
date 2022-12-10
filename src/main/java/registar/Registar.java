@@ -152,7 +152,32 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return facilitySynonyms.get(day);
     }
 
+    public List<CateringFacility> getCateringFacilities() {
+        return new ArrayList<>(secretKeys.keySet());
+    }
 
+    public HashMap<LocalDate, List<String>> getFacilitySynonyms() {
+        return facilitySynonyms;
+    }
+
+    public List<Map.Entry<LocalDate, String>> getFacilitySynonymPairs() {
+        List<Map.Entry<LocalDate, String>> facilitySynonymPairs = new ArrayList<>();
+        for (Map.Entry<LocalDate, List<String>> entry : facilitySynonyms.entrySet()) {
+            for(int i = 0; i < entry.getValue().size(); i++){
+                Map.Entry<LocalDate, String> mapEntry = new AbstractMap.SimpleEntry<LocalDate, String>(entry.getKey(), entry.getValue().get(i));
+                facilitySynonymPairs.add(mapEntry);
+            }
+        }
+        return facilitySynonymPairs;
+    }
+
+    public SignedData[] getAssignedTokensPerUser(String phoneNumber) {
+        return users.get(phoneNumber);
+    }
+
+    public List<String> getUserPhoneNumbers(){
+        return new ArrayList<>(users.keySet());
+    }
 }
 
 
