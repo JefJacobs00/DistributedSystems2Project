@@ -13,14 +13,24 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DoctorGUI extends JFrame {
+
+    private CentralHealthAuthority healthAuthority;
+
+    private String healthAuthorityReg;
 
     private JPanel mainPanel;
 
@@ -46,11 +56,12 @@ public class DoctorGUI extends JFrame {
             this.setLayout(null);
             this.setResizable(false);
 
+            healthAuthority = new CentralHealthAuthority();
+
             logsTableModel = new DefaultTableModel();
 
             this.mainPanel = new JPanel();
             this.mainPanel.setBounds(0, 0, 800, 600);
-//            tableColumns=new String[]{"Interval","User Token","Catering Facility Hash"};
             this.logsTable = new JTable(logsTableModel);
             logsTableModel.addColumn("User Token");
             logsTableModel.addColumn("CF Hash");
@@ -97,30 +108,31 @@ public class DoctorGUI extends JFrame {
 
             tableScroller.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Logs"), margin));
 
-
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new GridLayout(2, 1, 10, 10));
 
             JPanel topPanel = new JPanel();
             topPanel.setLayout(new GridLayout(2, 1, 10, 10));
 
-            topPanel.add(receiveLogsButton);
+            connectionNrLabel = new JLabel();
+            topPanel.setBorder(margin);
             topPanel.add(connectionNrLabel);
+            topPanel.add(receiveLogsButton);
+            topPanel.setBorder(margin);
+
 
             JPanel centerPanel = new JPanel();
             centerPanel.setLayout(new BorderLayout());
 
-            mainPanel.add(topPanel, BorderLayout.PAGE_START);
-            mainPanel.add(tableScroller, BorderLayout.CENTER);
+            centerPanel.add(topPanel, BorderLayout.PAGE_START);
+            centerPanel.add(tableScroller, BorderLayout.CENTER);
 
-            connectionNrLabel = new JLabel();
-            connectionNrLabel.setBorder(margin);
+
             receiveLogsButton.addActionListener(this::receiveLogsButtonClicked);
             transmitLogsButton.addActionListener(this::transmitLogsButtonClicked);
 
 
             bottomPanel.add(transmitLogsButton);
-            bottomPanel.add(connectionNrLabel);
 
             mainPanel.add(titleLabel, BorderLayout.PAGE_START);
             mainPanel.add(centerPanel, BorderLayout.CENTER);
@@ -134,7 +146,8 @@ public class DoctorGUI extends JFrame {
                 @Override
                 public void run() {
                     while (true){
-                        System.out.println("Update mixingserver");
+                        System.out.println("Update logs");
+
                         refreshRows();
                         try {
                             Thread.sleep(5000);
@@ -150,29 +163,38 @@ public class DoctorGUI extends JFrame {
     }
 
     private void refreshRows(){
+        System.out.println(healthAuthority.getUserLogs().size());
         logsTableModel.setRowCount(0);
-        for(String[] s : getUserLogsData(userLogs)){
+        for(String[] s : getUserLogsData(healthAuthority.getUserLogs())){
             logsTableModel.addRow(s);
         }
     }
 
-    private String[][] getUserLogsData(java.util.List<UserLog> userLogs){
+    private String[][] getUserLogsData(Map<LocalDate, List<UserLog>> userLogs){
+        List<UserLog> logs = new ArrayList(userLogs.values());
         String[][] data = new String[userLogs.size()][3];
-        for (int i = 0; i < userLogs.size(); i++){
-            data[i][0] = userLogs.get(i).getUserTokenShortString();
-            data[i][1] = userLogs.get(i).getCfHashShortString();
-            data[i][2] = String.valueOf(userLogs.get(i).getHashRandomNumber());
-            data[i][3] = userLogs.get(i).getVisitInterval().toString();
+        for (int i = 0; i < logs.size(); i++){
+            data[i][0] = logs.get(i).getUserTokenShortString();
+            data[i][1] = logs.get(i).getCfHashShortString();
+            data[i][2] = String.valueOf(logs.get(i).getHashRandomNumber());
+            data[i][3] = logs.get(i).getVisitInterval().toString();
         }
         return data;
     }
 
     private void receiveLogsButtonClicked(java.awt.event.ActionEvent evt) {
-        // TODO - Receive logs
+        try {
+            String connectionNr = healthAuthority.start();
+            connectionNrLabel.setText("<html>" + "Connectienummer: " + "<B>" + connectionNr + "</B>" + "</html>");
+        } catch(AlreadyBoundException | RemoteException ex){
+            connectionNrLabel.setText("Er is iets foutgelopen bij de server.");
+            connectionNrLabel.setForeground(Color.RED);
+            ex.printStackTrace();
+        }
     }
 
     private void transmitLogsButtonClicked(java.awt.event.ActionEvent evt) {
-        // TODO - Receive logs
+        healthAuthority.sendLogs();
     }
 
 

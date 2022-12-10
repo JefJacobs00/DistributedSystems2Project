@@ -27,8 +27,9 @@ public class Main {
             mixingServerFrame.setVisible(true);
 //            registry.bind("MatchingServer", new MatchingServer());
 //            registry.bind("MixingServer", new MixingServer());
-            CentralHealthAuthority cha = new CentralHealthAuthority("localhost", 1099);
-            System.out.println(cha.start());
+//            CentralHealthAuthority cha = new CentralHealthAuthority("localhost", 1099);
+//            CentralHealthAuthority cha = new CentralHealthAuthority();
+//            System.out.println(cha.start());
         } catch (Exception e) {
             e.printStackTrace();
         }
