@@ -7,16 +7,12 @@ import mixingServer.MixingServer;
 import mixingServer.MixingServerGUI;
 import users.CentralHealthAuthority;
 
+import javax.swing.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.SecureRandom;
-import java.security.cert.CertificateFactorySpi;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
-import javax.rmi.ssl.SslRMIServerSocketFactory;
-import javax.swing.*;
-
 
 public class Main {
+
 
     private void startServer() {
 
