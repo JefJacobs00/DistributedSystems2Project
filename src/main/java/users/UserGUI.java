@@ -1,6 +1,7 @@
 package users;
 
 import com.google.zxing.NotFoundException;
+import org.bouncycastle.util.encoders.Hex;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -208,6 +209,7 @@ public class UserGUI extends JFrame {
         readQrPanel.add(leaveFacilityButton, BorderLayout.PAGE_END);
         leaveFacilityButton.setVisible(false);
         openQrButton.setVisible(true);
+        qrImage.setOpaque(true);
         openQrButton.addActionListener(this::openQrButtonClicked);
         leaveFacilityButton.addActionListener(this::leaveFacilityButtonClicked);
     }
@@ -215,8 +217,8 @@ public class UserGUI extends JFrame {
     private void leaveFacility(){
         qrBufferedImage = null;
         qrImage.setIcon(null);
+        confirmationLabel.setText("");
         user.leaveFacility();
-        mainPanel.setSelectedIndex(0);
     }
 
     private void readQrCode() throws IOException, NotFoundException, SignatureException, InvalidKeyException {
@@ -227,13 +229,20 @@ public class UserGUI extends JFrame {
         if ( returnVal == JFileChooser.APPROVE_OPTION ){
             File file = fileChooser.getSelectedFile();
             qrBufferedImage = ImageIO.read(file);
-            qrImage.setIcon(new ImageIcon(qrBufferedImage));
+            //qrImage.setIcon(new ImageIcon(qrBufferedImage));
             String confirmationText = user.visitFacility(qrBufferedImage);
             if(!confirmationText.equals("Invalid token")){
+                byte[] confirmation = Hex.decode(confirmationText);
+                //qrImage.setIcon(new ImageIcon(qrBufferedImage));
+                qrImage.setOpaque(true);
+                qrImage.setBackground(new Color(confirmation[0] & 0xff,confirmation[1]& 0xff,confirmation[2] & 0xff));
                 confirmationText = confirmationText.substring(confirmationText.length()-4);
                 leaveFacilityButton.setVisible(true);
+            }else{
+                qrImage.setOpaque(false);
             }
             confirmationLabel.setText(confirmationText);
+
         }
         readQrPanel.repaint();
     }
