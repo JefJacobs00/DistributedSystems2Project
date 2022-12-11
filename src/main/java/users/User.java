@@ -128,7 +128,7 @@ public class User {
             LocalDateTime end = LocalDateTime.parse(object.get("end").getAsString(), dtf);
             TimeInterval interval = new TimeInterval(start,end);
 
-            UserLog log = new UserLog(object.get("userToken").toString(),object.get("cfHash").toString(),object.get("hashRandomNumber").getAsLong(), interval);
+            UserLog log = new UserLog(object.get("userToken").getAsString(),object.get("cfHash").getAsString(),object.get("hashRandomNumber").getAsLong(), interval);
             userLogs.add(log);
         }
 
