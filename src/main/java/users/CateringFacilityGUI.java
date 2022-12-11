@@ -48,8 +48,6 @@ public class CateringFacilityGUI extends JFrame{
 
     private BufferedImage qrBufferedImage;
 
-    private JButton generateQrButton;
-
     private JButton clearQrButton;
 
     private JLabel qrImage;
@@ -99,20 +97,10 @@ public class CateringFacilityGUI extends JFrame{
 
         Border margin = new EmptyBorder(10,10,10,10);
 
-        JLabel businessIdLabel = new JLabel("Business ID");
-        JTextField businessIdTextField = new JTextField();
-
-        genQrFields.put("businessId", businessIdTextField);
-
-        businessIdTextField.setColumns( 20 );
-
         qrImage = new JLabel();
 
         saveQrButton = new JButton("Save QR Code");
         clearQrButton = new JButton("Clear QR");
-
-        generateQrButton = new JButton("Generate");
-        generateQrButton.setMargin(new Insets(10, 10, 10, 10));
 
         generateQrParentPanel.setLayout(new BorderLayout());
 
@@ -123,10 +111,6 @@ public class CateringFacilityGUI extends JFrame{
         generateQrParentPanel.add(titleLabel, BorderLayout.PAGE_START);
         generateQrParentPanel.add(generateQrPanel, BorderLayout.CENTER);
 
-        generateFormPanel.add(businessIdLabel);
-        generateFormPanel.add(businessIdTextField);
-        generateFormPanel.add(generateQrButton);
-
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(1, 2, 10, 10));
 
@@ -135,13 +119,11 @@ public class CateringFacilityGUI extends JFrame{
 
         generateQrPanel.setLayout(new BorderLayout());
         generateQrPanel.setBorder(margin);
-        generateQrPanel.add(generateFormPanel, BorderLayout.PAGE_START);
         generateQrPanel.add(qrImage, BorderLayout.CENTER);
         generateQrPanel.add(buttonsPanel, BorderLayout.PAGE_END);
         saveQrButton.setVisible(false);
         clearQrButton.setVisible(false);
         saveQrButton.addActionListener(this::saveQrButtonClicked);
-        generateQrButton.addActionListener(this::generateQrButtonClicked);
         clearQrButton.addActionListener(this::clearQrButtonClicked);
     }
 
@@ -187,18 +169,6 @@ public class CateringFacilityGUI extends JFrame{
                 file = new File(file.getParentFile(), FilenameUtils.getBaseName(file.getName())+".jpg");
             }
             ImageIO.write(qrImage, "jpg", file);
-        }
-    }
-
-    private void generateQrButtonClicked(java.awt.event.ActionEvent evt){
-        String businessId = regJPanelFields.get("businessId").getText();
-        if(businessId.equals("")){
-            JOptionPane.showMessageDialog(this, "Please provide a valid Business ID");
-        } else {
-            // TODO - Find catering facility between all registered ones
-            // cateringFacilities.find(o -> o.businessId = businessId)
-            // TODO - Generate QR
-            // generateQr();
         }
     }
 

@@ -164,11 +164,11 @@ public class UserGUI extends JFrame {
         JLabel statusLabel = new JLabel();
         statusLabel.setBorder(margin);
         try {
-            statusLabel.setText("User Status: " + user.getLogs());
-            if(user.getUserStatus().equals("Healthy")){
-                statusLabel.setForeground(Color.GREEN);
-            } else if (user.getUserStatus().equals("Infected")){
+            if(user.checkInfected()){
+                statusLabel.setText("User Status: " + "Critical");
                 statusLabel.setForeground(Color.RED);
+            } else {
+                statusLabel.setText("");
             }
         } catch (Exception ex){
             statusLabel.setText("User Status could not be fetched from server");
@@ -300,11 +300,11 @@ public class UserGUI extends JFrame {
         JLabel statusLabel = new JLabel();
         statusLabel.setBorder(margin);
         try {
-            statusLabel.setText("User Status: " + user.getUserStatus());
-            if(user.getUserStatus().equals("Healthy")){
-                statusLabel.setForeground(Color.GREEN);
-            } else if (user.getUserStatus().equals("Infected")){
+            if(user.checkInfected()){
+                statusLabel.setText("User Status: " + "Critical");
                 statusLabel.setForeground(Color.RED);
+            } else {
+                statusLabel.setText("");
             }
         } catch (Exception ex){
             statusLabel.setText("User Status could not be fetched from server");
