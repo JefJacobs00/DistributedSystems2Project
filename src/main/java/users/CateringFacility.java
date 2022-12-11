@@ -60,6 +60,7 @@ public class CateringFacility implements java.io.Serializable {
         }
     }
 
+    @JsonIgnore
     private BufferedImage createQrInformation(String nym) throws NoSuchAlgorithmException, IOException {
         SecureRandom s = new SecureRandom();
         long r = s.nextLong();
@@ -74,42 +75,42 @@ public class CateringFacility implements java.io.Serializable {
         return qr.convertToImage();
     }
 
-    @JsonGetter
+
     public String getBusinessId() {
         return businessId;
     }
 
-    @JsonSetter
+
     public void setBusinessId(String businessId) {
         this.businessId = businessId;
     }
 
-    @JsonGetter
+
     public String getName() {
         return name;
     }
 
-    @JsonSetter
+
     public void setName(String name) {
         this.name = name;
     }
 
-    @JsonGetter
+
     public String getAddress() {
         return address;
     }
 
-    @JsonSetter
+
     public void setAddress(String address) {
         this.address = address;
     }
 
-    @JsonGetter
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    @JsonSetter
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
@@ -119,6 +120,7 @@ public class CateringFacility implements java.io.Serializable {
         return qrCode;
     }
 
+    @JsonIgnore
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -127,6 +129,7 @@ public class CateringFacility implements java.io.Serializable {
         return Objects.equals(businessId, that.businessId) && Objects.equals(name, that.name) && Objects.equals(address, that.address);
     }
 
+    @JsonIgnore
     @Override
     public int hashCode() {
         return Objects.hash(businessId, name, address);

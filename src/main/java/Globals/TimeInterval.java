@@ -3,8 +3,6 @@ package Globals;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
 
 public class TimeInterval implements java.io.Serializable {
     LocalDateTime start;

@@ -170,32 +170,26 @@ public class User {
         return new TimeInterval(start, end);
     }
 
-    @JsonGetter
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    @JsonSetter
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    @JsonGetter
     public SignedData[] getTokens() {
         return tokens;
     }
 
-    @JsonSetter
     public void setTokens(SignedData[] tokens) {
         this.tokens = tokens;
     }
 
-    @JsonGetter
     public List<UserLog> getLogs() {
         return logs;
     }
 
-    @JsonSetter
     public void setLogs(List<UserLog> logs) {
         this.logs = logs;
     }

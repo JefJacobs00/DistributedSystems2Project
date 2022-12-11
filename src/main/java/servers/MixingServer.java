@@ -1,9 +1,11 @@
 package servers;
 
 import Globals.Capsule;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import interfaceRMI.IMatchingService;
 import interfaceRMI.IMixingServer;
 import interfaceRMI.IRegistar;
+import io.jsondb.annotation.Id;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
+
 
 public class MixingServer extends UnicastRemoteObject implements IMixingServer {
     private IRegistar registar;
@@ -41,6 +44,26 @@ public class MixingServer extends UnicastRemoteObject implements IMixingServer {
 
     public List<Capsule> getReceivedCapsules() {
         return receivedCapsules;
+    }
+
+    public IRegistar getRegistar() {
+        return registar;
+    }
+
+    public IMatchingService getMatchingService() {
+        return matchingService;
+    }
+
+    public ArrayList<String> getSpentTokens() {
+        return spentTokens;
+    }
+
+    public KeyPair getKeyPair() {
+        return keyPair;
+    }
+
+    public Signature getSignature() {
+        return signature;
     }
 
     @Override

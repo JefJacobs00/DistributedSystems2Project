@@ -17,10 +17,6 @@ public class Main {
         if (!jsonDBTemplate.collectionExists(CateringFacility.class))
             jsonDBTemplate.createCollection(CateringFacility.class);
 
-
-
-
-
         CateringFacility cf = new CateringFacility("id1", "cf","somewhere", "0495366639" ,"localhost" , 1099 );
         BufferedImage qr = cf.requestQrCode();
         User user = new User("0495366618");

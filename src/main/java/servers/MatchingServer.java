@@ -23,11 +23,11 @@ import java.util.*;
 import static org.bouncycastle.pqc.math.linearalgebra.ByteUtils.toHexString;
 
 
-@Document(collection = "MatchingServer", schemaVersion = "1.0")
+
 public class MatchingServer extends UnicastRemoteObject implements IMatchingService {
 
     private IRegistar registar;
-    @Id
+
     private int id;
     private List<Capsule> capsules;
 
@@ -41,8 +41,22 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         uninformedTokens = new ArrayList<>();
     }
 
-    public MatchingServer() throws Exception  {
+    public MatchingServer(int id) throws RemoteException, NotBoundException {
+        this.id = id;
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        registar = (IRegistar) myRegistry.lookup("Registar");
+        capsules = new ArrayList<>();
+        criticalFacilities = new ArrayList<>();
+        uninformedTokens = new ArrayList<>();
+    }
 
+    public MatchingServer(InstanceMatchingServer instanceMatchingServer) throws RemoteException, NotBoundException {
+        Registry myRegistry = LocateRegistry.getRegistry("localhost", 1099);
+        registar = (IRegistar) myRegistry.lookup("Registar");
+        this.id = instanceMatchingServer.getId();
+        this.capsules = instanceMatchingServer.getCapsules();
+        this.criticalFacilities = instanceMatchingServer.getCriticalFacilities();
+        this.uninformedTokens = instanceMatchingServer.getUninformedTokens();
     }
 
     private List<String> getNymsForDay(LocalDate date) throws RemoteException {
@@ -139,13 +153,19 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
         return uninformedTokens;
     }
 
-    @JsonGetter
     public int getId() {
         return id;
     }
 
-    @JsonSetter
     public void setId(int id) {
         this.id = id;
+    }
+
+    public IRegistar getRegistar() {
+        return registar;
+    }
+
+    public List<CriticalTuple> getCriticalFacilities() {
+        return criticalFacilities;
     }
 }

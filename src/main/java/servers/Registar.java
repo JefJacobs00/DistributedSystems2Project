@@ -3,6 +3,7 @@ package servers;
 import Globals.SignedData;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import interfaceRMI.IRegistar;
 import io.jsondb.annotation.Document;
@@ -27,37 +28,63 @@ import static org.bouncycastle.util.encoders.Hex.decode;
 import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 
-@Document(collection = "Registrar", schemaVersion= "1.0")
+
 public class Registar extends UnicastRemoteObject implements IRegistar {
 
-    @Id
     private int id;
+
     private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
+
     private HashMap<LocalDate , List<String>> facilitySynonyms;
 
     private KeyGenerator kg;
+
     private Signature signature;
+
     private KeyPair keyPairSign;
+
     private DateTimeFormatter dtf;
 
     private static final int DAILYTOKENCOUNT = 48;
 
     public Registar(int id) throws Exception {
+        this.id = id;
         kg = KeyGenerator.getInstance("HmacSHA256");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();
         signature = Signature.getInstance("SHA256withRSA");
 
-        users = new HashMap<String, SignedData[]>();
+        users = new HashMap<>();
         secretKeys = new HashMap<>();
         dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        facilitySynonyms = new HashMap<>();
+        this.facilitySynonyms = new HashMap<>();
+    }
+
+    public Registar(InstanceRegistar instanceRegistar) throws Exception{
+        kg = KeyGenerator.getInstance("HmacSHA256");
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairSign = keyPairGenerator.generateKeyPair();
+        signature = Signature.getInstance("SHA256withRSA");
+
+        this.id = instanceRegistar.getId();
+        this.users = instanceRegistar.getUsers();
+        this.secretKeys = new HashMap<>();
+        this.dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        this.facilitySynonyms = (HashMap<LocalDate, List<String>>) getFacilitySynonymsLocalDate(instanceRegistar.getFacilitySynonyms());
     }
 
     public Registar() throws Exception
     {
-        id = 0;
+        kg = KeyGenerator.getInstance("HmacSHA256");
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairSign = keyPairGenerator.generateKeyPair();
+        signature = Signature.getInstance("SHA256withRSA");
+
+        users = new HashMap<>();
+        secretKeys = new HashMap<>();
+        dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        this.facilitySynonyms = new HashMap<>();
     }
 
 
@@ -69,11 +96,11 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         byte[] derivedKey = getDerivedKey(cf);
         String nym = getFacilityNym(derivedKey, cf, LocalDate.now());
 
-        if(!facilitySynonyms.containsKey(LocalDate.now())){
-            facilitySynonyms.put(LocalDate.now(), new ArrayList<String>());
+        if(!this.facilitySynonyms.containsKey(LocalDate.now())){
+            this.facilitySynonyms.put(LocalDate.now(), new ArrayList<String>());
         }
 
-        List<String> nyms = facilitySynonyms.get(LocalDate.now());
+        List<String> nyms = this.facilitySynonyms.get(LocalDate.now());
         nyms.add(nym);
 
         return nym;
@@ -95,6 +122,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return key;
     }
 
+    @JsonIgnore
     private String getFacilityNym(byte[] derivedKey, CateringFacility cf, LocalDate day) throws NoSuchAlgorithmException {
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         sha.update(derivedKey);
@@ -117,8 +145,6 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         // Sign using current day
         LocalDate localDate = LocalDate.now();
 
-
-
         for(int i = 0; i < DAILYTOKENCOUNT; i++){
             long r = s.nextLong();
             signature.update(longToBytes(r));
@@ -134,6 +160,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return tokens;
     }
 
+    @JsonIgnore
     private byte[] longToBytes(long x) {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(x);
@@ -157,23 +184,23 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     @Override
     @JsonIgnore
     public List<String> getNymsForDay(LocalDate day) throws RemoteException {
+
         if(!this.facilitySynonyms.containsKey(day)){
             throw new IllegalArgumentException("No nyms for day: "+ day.toString());
         }
 
-        return facilitySynonyms.get(day);
+        return this.facilitySynonyms.get(day);
     }
 
-    @JsonGetter
     public int getId() {
         return id;
     }
 
-    @JsonSetter
     public void setId(int id) {
         this.id = id;
     }
 
+    @JsonIgnore
     public List<CateringFacility> getCateringFacilities() {
         return new ArrayList<>(secretKeys.keySet());
     }
@@ -182,9 +209,18 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return facilitySynonyms;
     }
 
+    public HashMap<LocalDate, List<String>> getFacilitySynonymsLocalDate(HashMap<String, List<String>> facilitySynonymsStrings) {
+        HashMap<LocalDate, List<String>> facilitySynonyms = new HashMap<>();
+        for(Map.Entry<String, List<String>> entry : facilitySynonymsStrings.entrySet()) {
+            facilitySynonyms.put(LocalDate.parse(entry.getKey(), dtf), entry.getValue());
+        }
+        return facilitySynonyms;
+    }
+
+
     public List<Map.Entry<LocalDate, String>> getFacilitySynonymPairs() {
         List<Map.Entry<LocalDate, String>> facilitySynonymPairs = new ArrayList<>();
-        for (Map.Entry<LocalDate, List<String>> entry : facilitySynonyms.entrySet()) {
+        for (Map.Entry<LocalDate, List<String>> entry : this.facilitySynonyms.entrySet()) {
             for(int i = 0; i < entry.getValue().size(); i++){
                 Map.Entry<LocalDate, String> mapEntry = new AbstractMap.SimpleEntry<LocalDate, String>(entry.getKey(), entry.getValue().get(i));
                 facilitySynonymPairs.add(mapEntry);
@@ -201,6 +237,30 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
         return new ArrayList<>(users.keySet());
     }
 
+
+    public HashMap<String, SignedData[]> getUsers() {
+        return users;
+    }
+
+    public HashMap<CateringFacility, SecretKey> getSecretKeys() {
+        return secretKeys;
+    }
+
+    public KeyGenerator getKg() {
+        return kg;
+    }
+
+    public Signature getSignature() {
+        return signature;
+    }
+
+    public KeyPair getKeyPairSign() {
+        return keyPairSign;
+    }
+
+    public DateTimeFormatter getDtf() {
+        return dtf;
+    }
 }
 
 
