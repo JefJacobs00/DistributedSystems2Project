@@ -232,7 +232,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
             LocalDateTime end = LocalDateTime.parse(object.get("end").getAsString(), dtf);
             TimeInterval interval = new TimeInterval(start,end);
 
-            CriticalTuple criticalTuple = new CriticalTuple(object.get("cfHash").toString(),interval);
+            CriticalTuple criticalTuple = new CriticalTuple(object.get("cfHash").getAsString(),interval);
             criticalTuples.add(criticalTuple);
         }
 
@@ -255,7 +255,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
             LocalDateTime end = LocalDateTime.parse(object.get("end").getAsString(), dtf);
             TimeInterval interval = new TimeInterval(start,end);
 
-            Capsule capsule = new Capsule(interval,new SignedData(object.get("userToken").toString(), object.get("hashRandomNumber").getAsLong()), object.get("cfHash").toString());
+            Capsule capsule = new Capsule(interval,new SignedData(object.get("userToken").getAsString(), object.get("hashRandomNumber").getAsLong()), object.get("cfHash").getAsString());
             capsules.add(capsule);
         }
 
