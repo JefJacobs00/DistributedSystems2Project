@@ -40,8 +40,6 @@ public class CateringFacilityGUI extends JFrame{
     private Map<String, JTextField> regJPanelFields;
 
     private Map<String, JComponent> addrJPanelFields;
-
-    private Map<String, JTextField> genQrFields;
     private JButton submitRegistrationButton;
 
     private JButton saveQrButton;
@@ -88,8 +86,6 @@ public class CateringFacilityGUI extends JFrame{
     private void initQrCodeForm(){
         this.generateQrPanel = new JPanel();
         this.generateQrParentPanel = new JPanel();
-
-        genQrFields = new HashMap<>();
 
         JPanel generateFormPanel = new JPanel();
 
@@ -286,7 +282,6 @@ public class CateringFacilityGUI extends JFrame{
                 String fullAddressString = String.format("%s, %s %s, %s", address, zipCode, city, country);
                 CateringFacility cateringFacility = new CateringFacility(businessId, name, fullAddressString, phoneNumber, "localhost", 1099);
                 mainPanel.setSelectedIndex(1);
-                genQrFields.get("businessId").setText(cateringFacility.getBusinessId());
                 generateQr(cateringFacility);
             } catch (RuntimeException ex){
                 JOptionPane.showMessageDialog(this, "Server error: something went wrong");
