@@ -238,18 +238,18 @@ public class UserGUI extends JFrame {
     private void sendLogsButtonClicked(java.awt.event.ActionEvent evt) {
         String chaIdentifier = healthAuthorityTextField.getText();
         if(chaIdentifier.equals("")){
-            JOptionPane.showMessageDialog(this, "Gelieve een geldige identifier op te geven");
+            JOptionPane.showMessageDialog(this, "Please provide a valid connection ID");
         } else {
             try {
                 user.sendLogs(chaIdentifier);
-                logsFeedbackLabel.setText("Logs zijn succesvol verstuurd");
+                logsFeedbackLabel.setText("Logs have been sent successfully");
                 logsFeedbackLabel.setForeground(Color.GREEN);
             } catch (NotBoundException ex){
-                logsFeedbackLabel.setText("Er is geen gezondheidsorganisatie aan dit ID gekoppeld");
+                logsFeedbackLabel.setText("There is no health authority linked to this connection ID");
                 logsFeedbackLabel.setForeground(Color.RED);
                 ex.printStackTrace();
             } catch (RemoteException ex) {
-                logsFeedbackLabel.setText("Er is iets foutgelopen bij de server");
+                logsFeedbackLabel.setText("Server error: something went wrong");
                 logsFeedbackLabel.setForeground(Color.RED);
                 ex.printStackTrace();
             }
@@ -278,9 +278,9 @@ public class UserGUI extends JFrame {
         confirmationLabel.setFont(new Font("Arial", Font.CENTER_BASELINE, 16));
         confirmationLabel.setBorder(margin);
 
-        openQrButton = new JButton("QR code openen");
+        openQrButton = new JButton("Open QR code");
         qrImage = new JLabel();
-        leaveFacilityButton = new JButton("Faciliteit verlaten");
+        leaveFacilityButton = new JButton("Leave facility");
 
         JPanel qrPanel = new JPanel();
         qrPanel.setLayout(new GridLayout(1, 2, 10, 10));

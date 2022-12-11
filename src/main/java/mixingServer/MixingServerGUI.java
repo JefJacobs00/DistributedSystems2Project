@@ -150,7 +150,7 @@ public class MixingServerGUI extends JFrame {
                 mixingServer.flushCapsules();
                 refreshRows();
             } catch (RemoteException ex){
-                flushFeedbackLabel.setText("De capsules konden niet geflusht worden");
+                flushFeedbackLabel.setText("Error: the capsules could not be flushed");
                 flushFeedbackLabel.setForeground(Color.RED);
                 ex.printStackTrace();
             }
