@@ -42,19 +42,33 @@ public class User {
 
     private SignedData[] tokens;
 
+    private String password;
+
     private IRegistar registar;
     private IMixingServer mixingServer;
     private IMatchingService matchingService;
     private UserLog currentLog;
     private List<UserLog> logs;
 
-    public User(String phoneNumber){
+    public User(String phoneNumber, String password){
         this.phoneNumber = phoneNumber;
+        this.password = password;
         this.start();
         this.logs = new ArrayList<>();
     }
 
+    public User(InstanceUser instanceUser){
+        this.phoneNumber = instanceUser.getPhoneNumber();
+        this.password = instanceUser.getPassword();
+        this.logs = instanceUser.getLogs();
+        this.start();
+    }
+
     public User(){}
+
+    public String getPassword() {
+        return password;
+    }
 
     public synchronized void start(){
         try {

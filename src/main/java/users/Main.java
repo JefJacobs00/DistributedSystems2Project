@@ -12,23 +12,23 @@ public class Main {
         String baseScanPackage = "users";
         JsonDBTemplate jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
 
-        if (!jsonDBTemplate.collectionExists(User.class))
-            jsonDBTemplate.createCollection(User.class);
+        if (!jsonDBTemplate.collectionExists(InstanceUser.class))
+            jsonDBTemplate.createCollection(InstanceUser.class);
         if (!jsonDBTemplate.collectionExists(CateringFacility.class))
             jsonDBTemplate.createCollection(CateringFacility.class);
 
         CateringFacility cf = new CateringFacility("id1", "cf","somewhere", "0495366639" ,"localhost" , 1099 );
         BufferedImage qr = cf.requestQrCode();
-        User user = new User("0495366618");
+//        User user = new User("0495366618");
 
 
-        jsonDBTemplate.upsert(cf);
-        jsonDBTemplate.upsert(user);
-        try {
-            String result = user.visitFacility(qr);
-            System.out.println(result);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        jsonDBTemplate.upsert(cf);
+//        jsonDBTemplate.upsert(user);
+//        try {
+//            String result = user.visitFacility(qr);
+//            System.out.println(result);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }

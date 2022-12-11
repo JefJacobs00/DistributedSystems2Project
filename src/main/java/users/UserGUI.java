@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +58,8 @@ public class UserGUI extends JFrame {
     private JButton sendLogsButton;
 
     private JTextField phoneNumberTextField;
+
+    private JPasswordField passwordTextField;
     private JButton submitRegistrationButton;
 
     private JLabel logsFeedbackLabel;
@@ -78,7 +81,7 @@ public class UserGUI extends JFrame {
         this.setResizable(false);
         this.isAuthenticated = false;
         this.mainPanel = new JTabbedPane();
-        this.mainPanel.setBounds(0, 0, 900, 200);
+        this.mainPanel.setBounds(0, 0, 900, 250);
         initRegistrationForm();
         initQrCodeForm();
         initLogSendForm();
@@ -88,6 +91,9 @@ public class UserGUI extends JFrame {
         String dbFilesLocation = "src/main/java/JsonDB/users.json";
         String baseScanPackage = "users";
         jsonDBTemplate = new JsonDBTemplate(dbFilesLocation, baseScanPackage);
+
+        if (!jsonDBTemplate.collectionExists(InstanceUser.class))
+            jsonDBTemplate.createCollection(InstanceUser.class);
 
         this.add(mainPanel);
 
@@ -103,7 +109,7 @@ public class UserGUI extends JFrame {
                     initLogSendForm();
                     mainPanel.remove(2);
                     mainPanel.remove(1);
-                    mainPanel.setSize(new Dimension(900, 200));
+                    mainPanel.setSize(new Dimension(900, 250));
                 } else if (mainPanel.getSelectedIndex() == 1) {
                     mainPanel.setSize(new Dimension(900, 500));
                 } else if (mainPanel.getSelectedIndex() == 2) {
@@ -119,7 +125,7 @@ public class UserGUI extends JFrame {
 
         Border margin = new EmptyBorder(10,10,10,10);
 
-        sendLogsButton = new JButton("Verstuur");
+        sendLogsButton = new JButton("Send");
         sendLogsButton.setMargin(new Insets(10, 10, 10, 10));
 
         logsFeedbackLabel = new JLabel();
@@ -127,7 +133,7 @@ public class UserGUI extends JFrame {
 
         logSendParentPanel.setLayout(new BorderLayout());
 
-        JLabel titleLabel = new JLabel("Verstuur gebruikerslogs");
+        JLabel titleLabel = new JLabel("Send user logs");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setBorder(margin);
 
@@ -290,30 +296,48 @@ public class UserGUI extends JFrame {
         registrationPanel.setBorder(margin);
 
         regJPanel = new JPanel();
-        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("Algemene Informatie"), margin));
-        regJPanel.setLayout(new GridLayout(1, 2, 10, 10));
+        regJPanel.setBorder(new CompoundBorder(BorderFactory.createTitledBorder("General Information"), margin));
+        regJPanel.setLayout(new GridLayout(2, 2, 10, 10));
 
         submitRegistrationButton.addActionListener(this::submitRegistrationButtonClicked);
 
-        JLabel phoneNumberLabel = new JLabel("Telefoonnummer");
-        phoneNumberTextField = new JTextField("");
+        JLabel phoneNumberLabel = new JLabel("Phone number");
+        phoneNumberTextField = new JTextField();
+        JLabel passwordLabel = new JLabel("Password");
+        passwordTextField = new JPasswordField();
 
         regJPanel.add(phoneNumberLabel);
         regJPanel.add(phoneNumberTextField);
+        regJPanel.add(passwordLabel);
+        regJPanel.add(passwordTextField);
 
         registrationPanel.add(regJPanel);
     }
 
     private void submitRegistrationButtonClicked(java.awt.event.ActionEvent evt){
         String phoneNumber = phoneNumberTextField.getText();
-        if(phoneNumber.equals("")
-                || !verifyPhoneNumber(phoneNumber)){
+        String password = passwordTextField.getText();
+        if(phoneNumber.equals("") || !verifyPhoneNumber(phoneNumber)){
             JOptionPane.showMessageDialog(this, "Gelieve een geldig telefoonnummer op te geven");
+        } if (password.equals("")) {
+            JOptionPane.showMessageDialog(this, "Gelieve een geldig wachtwoord op te geven");
         } else {
             try {
-                user = new User(phoneNumber);
-                jsonDBTemplate.upsert(phoneNumber);
-
+                ArrayList<InstanceUser> instanceUsers = (ArrayList<InstanceUser>) jsonDBTemplate.findAll(InstanceUser.class);
+                if(instanceUsers.stream().anyMatch(o -> o.getPhoneNumber().equals(phoneNumber))){
+                    InstanceUser userMatch = instanceUsers.stream().filter(o -> o.getPhoneNumber().equals(phoneNumber)).findFirst().get();
+                    if(!userMatch.getPassword().equals(password)){
+                        JOptionPane.showMessageDialog(this, "Telefoonnummer en wachtwoord komen niet overeen");
+                    } else {
+                        user = new User(userMatch);
+                    }
+                } else {
+                    user = new User(phoneNumber, password);
+                    InstanceUser instanceUser = new InstanceUser();
+                    instanceUser.setPhoneNumber(phoneNumber);
+                    instanceUser.setPassword(password);
+                    jsonDBTemplate.upsert(instanceUser);
+                }
                 this.isAuthenticated = true;
                 mainPanel.add("QR Code Generator", readQrParentPanel);
                 mainPanel.add("Log informatie", logSendParentPanel);
