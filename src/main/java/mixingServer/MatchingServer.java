@@ -113,6 +113,7 @@ public class MatchingServer extends UnicastRemoteObject implements IMatchingServ
     @Override
     public void receiveInformedToken(String token) throws RemoteException {
         uninformedTokens.remove(token);
+        informedTokens.add(token);
         saveToFile();
     }
 
