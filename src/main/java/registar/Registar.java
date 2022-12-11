@@ -1,14 +1,19 @@
 package registar;
 
 import Globals.SignedData;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import interfaceRMI.IRegistar;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import users.CateringFacility;
 
-import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
@@ -17,7 +22,6 @@ import java.security.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.bouncycastle.util.encoders.Hex.decode;
@@ -25,8 +29,6 @@ import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 
 public class Registar extends UnicastRemoteObject implements IRegistar {
-    // Mapping between user and issued tokens
-    //users, facili, per dag, secret key
     private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
     private HashMap<LocalDate , List<String>> facilitySynonyms;
@@ -36,8 +38,6 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
     private KeyPair keyPairSign;
 
     private Map<String, LocalDate> lastUserTokenUpdate;
-
-    private SecretKeySpec keyAES;
 
     private DateTimeFormatter dtf;
 
@@ -52,8 +52,14 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
         users = new HashMap<String, SignedData[]>();
         secretKeys = new HashMap<>();
-        dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         facilitySynonyms = new HashMap<>();
+
+        try {
+            facilitySynonyms = loadFacilityNymsFromFile();
+            users = loadUsersFromFile();
+            secretKeys = loadFacilitiesFromFile();
+        }catch (Exception e){}
     }
 
 
@@ -70,7 +76,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
         List<String> nyms = facilitySynonyms.get(LocalDate.now());
         nyms.add(nym);
-
+        saveToFile();
         return nym;
     }
 
@@ -133,6 +139,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
 
         users.put(phoneNumber, tokens);
+        saveToFile();
         return tokens;
     }
 
@@ -181,6 +188,134 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
             }
         }
         return facilitySynonymPairs;
+    }
+
+    private HashMap<String, SignedData[]> loadUsersFromFile() throws FileNotFoundException {
+        JsonParser parser = new JsonParser();
+        JsonObject jsonObject = (JsonObject) parser.parse(new FileReader("registrar.json"));
+
+        JsonArray jsonArray = jsonObject.get("users").getAsJsonArray();
+
+        HashMap<String,SignedData[]> uninformedTokens = new HashMap<>();
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject object = (JsonObject) jsonArray.get(i);
+            String phoneNumber = object.get("phoneNumber").getAsString();
+            JsonArray jsonTokens = object.get("tokens").getAsJsonArray();
+            SignedData[] tokens = new SignedData[jsonTokens.size()];
+            for (int j = 0; j < jsonTokens.size(); j++) {
+                JsonObject jsonToken = (JsonObject) jsonTokens.get(j);
+                tokens[j] = new SignedData(jsonToken.get("signature").getAsString(),jsonToken.get("data").getAsLong());
+            }
+
+            uninformedTokens.put(phoneNumber,tokens);
+        }
+
+        return uninformedTokens;
+    }
+
+    private HashMap<CateringFacility,SecretKey> loadFacilitiesFromFile() throws FileNotFoundException {
+        JsonParser parser = new JsonParser();
+        JsonObject jsonObject = (JsonObject) parser.parse(new FileReader("registrar.json"));
+
+        JsonArray jsonArray = jsonObject.get("facilities").getAsJsonArray();
+
+        HashMap<CateringFacility,SecretKey> facilities = new HashMap<>();
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject object = (JsonObject) jsonArray.get(i);
+            CateringFacility cf = new  CateringFacility(object.get("businessId").getAsString(),
+                    object.get("name").getAsString(),
+                    object.get("address").getAsString(),
+                    object.get("phoneNumber").getAsString(),
+                    "localhost",1099);
+
+
+            facilities.put(cf,kg.generateKey());
+        }
+
+        return facilities;
+    }
+
+    private HashMap<LocalDate,List<String>> loadFacilityNymsFromFile() throws FileNotFoundException {
+        JsonParser parser = new JsonParser();
+        JsonObject jsonObject = (JsonObject) parser.parse(new FileReader("registrar.json"));
+
+        JsonArray jsonArray = jsonObject.get("facilityNyms").getAsJsonArray();
+
+        HashMap<LocalDate,List<String>> facilityNyms = new HashMap<>();
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject object = (JsonObject) jsonArray.get(i);
+            LocalDate day = LocalDate.parse(object.get("day").getAsString(), dtf);
+            JsonArray jsonTokens = object.get("nyms").getAsJsonArray();
+            List<String> nyms = new ArrayList<>();
+            for (int j = 0; j < jsonTokens.size(); j++) {
+                JsonElement jsonToken = jsonTokens.get(j);
+                nyms.add(jsonToken.getAsString());
+            }
+
+            facilityNyms.put(day,nyms);
+        }
+
+        return facilityNyms;
+    }
+
+    private void saveToFile(){
+        JsonObject data = new JsonObject();
+        JsonArray jsonUsers = new JsonArray();
+        for (String user : this.users.keySet()) {
+            JsonObject jsonUser = new JsonObject();
+            jsonUser.addProperty("phoneNumber",user);
+            JsonArray tokens = new JsonArray();
+
+            for (SignedData token: this.users.get(user)) {
+                JsonObject jsonToken = new JsonObject();
+                jsonToken.addProperty("signature", token.getSignature());
+                jsonToken.addProperty("data", token.getData().toString());
+                tokens.add(jsonToken);
+            }
+            jsonUser.add("tokens", tokens);
+            jsonUsers.add(jsonUser);
+
+        }
+
+        JsonArray jsonFacilityNyms = new JsonArray();
+
+        for (LocalDate day : this.facilitySynonyms.keySet()) {
+            this.facilitySynonyms.get(day);
+            JsonObject facilityNyms = new JsonObject();
+            facilityNyms.addProperty("day", dtf.format(day));
+
+            JsonArray nyms = new JsonArray();
+            for (String nym : this.facilitySynonyms.get(day)) {
+                nyms.add(nym);
+            }
+            facilityNyms.add("nyms", nyms);
+            jsonFacilityNyms.add(facilityNyms);
+        }
+
+        JsonArray facilities = new JsonArray();
+        for (CateringFacility cf: this.secretKeys.keySet()) {
+            JsonObject facility = new JsonObject();
+            facility.addProperty("businessId", cf.getBusinessId());
+            facility.addProperty("address", cf.getAddress());
+            facility.addProperty("name", cf.getName());
+            facility.addProperty("phoneNumber", cf.getPhoneNumber());
+            facilities.add(facility);
+        }
+
+        data.add("facilities", facilities);
+        data.add("facilityNyms", jsonFacilityNyms);
+        data.add("users", jsonUsers);
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("registrar.json"));
+            writer.write(data.toString());
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public SignedData[] getAssignedTokensPerUser(String phoneNumber) {

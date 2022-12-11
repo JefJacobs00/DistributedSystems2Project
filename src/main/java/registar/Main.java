@@ -1,11 +1,7 @@
 package registar;
 
-import io.jsondb.JsonDBTemplate;
-import mixingServer.MatchingServer;
 import mixingServer.MatchingServerGUI;
-import mixingServer.MixingServer;
 import mixingServer.MixingServerGUI;
-import users.CentralHealthAuthority;
 
 import javax.swing.*;
 import java.rmi.registry.LocateRegistry;

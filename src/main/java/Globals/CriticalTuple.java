@@ -1,6 +1,6 @@
 package Globals;
 
-public class CriticalTuple {
+public class CriticalTuple implements java.io.Serializable{
     private String cateringFacilityHash;
     private TimeInterval timeInterval;
 
