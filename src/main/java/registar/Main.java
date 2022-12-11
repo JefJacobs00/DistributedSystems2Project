@@ -13,7 +13,7 @@ public class Main {
     private void startServer() {
         try {
             Registry registry = LocateRegistry.createRegistry(1099);
-            JFrame registarFrame = new RegistarGUI("Registar");
+            JFrame registarFrame = new RegistrarGUI("Registar");
             registarFrame.setVisible(true);
             JFrame matchingServerFrame = new MatchingServerGUI("Matching Server");
             matchingServerFrame.setVisible(true);

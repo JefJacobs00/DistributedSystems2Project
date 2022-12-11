@@ -28,7 +28,7 @@ import static org.bouncycastle.util.encoders.Hex.decode;
 import static org.bouncycastle.util.encoders.Hex.toHexString;
 
 
-public class Registar extends UnicastRemoteObject implements IRegistar {
+public class Registrar extends UnicastRemoteObject implements IRegistar {
     private HashMap<String, SignedData[]> users;
     private HashMap<CateringFacility , SecretKey> secretKeys;
     private HashMap<LocalDate , List<String>> facilitySynonyms;
@@ -43,7 +43,7 @@ public class Registar extends UnicastRemoteObject implements IRegistar {
 
     private static final int DAILYTOKENCOUNT = 48;
 
-    protected Registar() throws Exception {
+    protected Registrar() throws Exception {
         kg = KeyGenerator.getInstance("HmacSHA256");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairSign = keyPairGenerator.generateKeyPair();

@@ -15,14 +15,12 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class RegistarGUI extends JFrame{
+public class RegistrarGUI extends JFrame{
     private JPanel mainPanel;
 
     private JTable facilitySynonymsPerDayTable;
@@ -31,7 +29,7 @@ public class RegistarGUI extends JFrame{
 
     private JTable cateringFacilitiesTable;
 
-    private Registar registar;
+    private Registrar registrar;
 
     private DefaultTableModel facilitySynonymsPerDayTableModel;
 
@@ -39,13 +37,13 @@ public class RegistarGUI extends JFrame{
 
     private DefaultTableModel cateringFacilitiesTableModel;
 
-    public RegistarGUI(String title){
+    public RegistrarGUI(String title){
         super(title);
 
         try {
             Registry registry = LocateRegistry.getRegistry(1099);
-            registar = new Registar();
-            registry.bind("Registar", registar);
+            registrar = new Registrar();
+            registry.bind("Registar", registrar);
 
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             this.setSize(new Dimension(1000, 600));
@@ -84,14 +82,14 @@ public class RegistarGUI extends JFrame{
                         String value = "";
                         if(col == 0){
                             DateTimeFormatter customFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                            value = registar.getFacilitySynonymPairs().get(row).getKey().format(customFormat);
+                            value = registrar.getFacilitySynonymPairs().get(row).getKey().format(customFormat);
                         } else if (col == 1){
-                            value = registar.getFacilitySynonymPairs().get(row).getValue();
+                            value = registrar.getFacilitySynonymPairs().get(row).getValue();
                         }
                         JTextArea ta = new JTextArea(value,20,40);
                         ta.setEditable(false);
                         ta.setLineWrap(true);
-                        JOptionPane.showMessageDialog(RegistarGUI.this, ta);
+                        JOptionPane.showMessageDialog(RegistrarGUI.this, ta);
                     }
                 }
             });
@@ -103,8 +101,8 @@ public class RegistarGUI extends JFrame{
                         int row = assignedUserTokensTable.getSelectedRow();
                         int col = assignedUserTokensTable.getSelectedColumn();
                         String value = "";
-                        value = registar.getUserPhoneNumbers().get(row);
-                        SignedData[] assignedTokensPerUser = registar.getAssignedTokensPerUser(value);
+                        value = registrar.getUserPhoneNumbers().get(row);
+                        SignedData[] assignedTokensPerUser = registrar.getAssignedTokensPerUser(value);
                         String[] shortenedAssignedTokens = new String[assignedTokensPerUser.length];
                         for(int i = 0; i < assignedTokensPerUser.length; i++){
                             shortenedAssignedTokens[i] = assignedTokensPerUser[i].toSpecialString();
@@ -115,7 +113,7 @@ public class RegistarGUI extends JFrame{
 //                        JTextArea ta = new JTextArea(value,20,40);
 //                        ta.setEditable(false);
 //                        ta.setLineWrap(true);
-                        JOptionPane.showMessageDialog(RegistarGUI.this, userTokensScrollablePane);
+                        JOptionPane.showMessageDialog(RegistrarGUI.this, userTokensScrollablePane);
                     }
                 }
             });
@@ -128,18 +126,18 @@ public class RegistarGUI extends JFrame{
                         int col = cateringFacilitiesTable.getSelectedColumn();
                         String value = "";
                         if(col == 0){
-                            value = registar.getCateringFacilities().get(row).getBusinessId();
+                            value = registrar.getCateringFacilities().get(row).getBusinessId();
                         } else if (col == 1){
-                            value = registar.getCateringFacilities().get(row).getName();
+                            value = registrar.getCateringFacilities().get(row).getName();
                         } else if (col == 2){
-                            value = registar.getCateringFacilities().get(row).getAddress();
+                            value = registrar.getCateringFacilities().get(row).getAddress();
                         } else if (col == 3){
-                            value = registar.getCateringFacilities().get(row).getPhoneNumber();
+                            value = registrar.getCateringFacilities().get(row).getPhoneNumber();
                         }
                         JTextArea ta = new JTextArea(value,20,40);
                         ta.setEditable(false);
                         ta.setLineWrap(true);
-                        JOptionPane.showMessageDialog(RegistarGUI.this, ta);
+                        JOptionPane.showMessageDialog(RegistrarGUI.this, ta);
                     }
                 }
             });
@@ -191,17 +189,17 @@ public class RegistarGUI extends JFrame{
 
     private void refreshRows(){
         facilitySynonymsPerDayTableModel.setRowCount(0);
-        for(String[] s : getFacilitySynonymsData(registar.getFacilitySynonymPairs())){
+        for(String[] s : getFacilitySynonymsData(registrar.getFacilitySynonymPairs())){
             facilitySynonymsPerDayTableModel.addRow(s);
         }
 
         assignedUserTokensTableModel.setRowCount(0);
-        for(String[] s : getAssignedUserTokensData(registar.getUserPhoneNumbers())){
+        for(String[] s : getAssignedUserTokensData(registrar.getUserPhoneNumbers())){
             assignedUserTokensTableModel.addRow(s);
         }
         try {
             cateringFacilitiesTableModel.setRowCount(0);
-            for(String[] s : getCateringFacilitiesData(registar.getCateringFacilities())){
+            for(String[] s : getCateringFacilitiesData(registrar.getCateringFacilities())){
                 cateringFacilitiesTableModel.addRow(s);
             }
         } catch (Exception ex) {
@@ -240,7 +238,7 @@ public class RegistarGUI extends JFrame{
 
 
     public static void main(String[] args) throws ParseException {
-        JFrame frame = new RegistarGUI("Registar GUI");
+        JFrame frame = new RegistrarGUI("Registar GUI");
         frame.setVisible(true);
     }
 }

@@ -15,8 +15,8 @@ import java.util.List;
  * A test Pojo representing a imaginary class Instance.
  * @version 1.0 28-Sep-2016
  */
-@Document(collection = "instancesRegistar", schemaVersion= "1.0")
-public class InstanceRegistar {
+@Document(collection = "instancesRegistrar", schemaVersion= "1.0")
+public class InstanceRegistrar {
     @Id
     private String id;
     private HashMap<String, SignedData[]> users;
